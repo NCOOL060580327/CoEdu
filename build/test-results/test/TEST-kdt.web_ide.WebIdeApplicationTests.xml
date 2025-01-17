@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="kdt.web_ide.WebIdeApplicationTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-01-16T08:38:34" hostname="ijiwon-ui-noteubug.local" time="0.39">
+  <properties/>
+  <testcase name="contextLoads()" classname="kdt.web_ide.WebIdeApplicationTests" time="0.39"/>
+  <system-out><![CDATA[17:38:32.090 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [kdt.web_ide.WebIdeApplicationTests]: WebIdeApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+17:38:32.159 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration kdt.web_ide.WebIdeApplication for test class kdt.web_ide.WebIdeApplicationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2025-01-16T17:38:32.430+09:00  INFO 12656 --- [    Test worker] kdt.web_ide.WebIdeApplicationTests       : Starting WebIdeApplicationTests using Java 17.0.8 with PID 12656 (started by ijiwon in /Users/ijiwon/Documents/portfolio/kdt/web-ide/web-ide-repo)
+2025-01-16T17:38:32.431+09:00  INFO 12656 --- [    Test worker] kdt.web_ide.WebIdeApplicationTests       : No active profile set, falling back to 1 default profile: "default"
+2025-01-16T17:38:33.001+09:00  INFO 12656 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-01-16T17:38:33.034+09:00  INFO 12656 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 26 ms. Found 1 JPA repository interface.
+2025-01-16T17:38:33.335+09:00  INFO 12656 --- [    Test worker] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-01-16T17:38:33.364+09:00  INFO 12656 --- [    Test worker] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.4.Final
+2025-01-16T17:38:33.380+09:00  INFO 12656 --- [    Test worker] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-01-16T17:38:33.525+09:00  INFO 12656 --- [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-01-16T17:38:33.540+09:00  INFO 12656 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-01-16T17:38:33.631+09:00  INFO 12656 --- [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:tcp://localhost/~/test user=SA
+2025-01-16T17:38:33.632+09:00  INFO 12656 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-01-16T17:38:33.653+09:00  WARN 12656 --- [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-01-16T17:38:33.672+09:00  INFO 12656 --- [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.1.214
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-01-16T17:38:34.195+09:00  INFO 12656 --- [    Test worker] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-01-16T17:38:34.251+09:00  INFO 12656 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-01-16T17:38:34.666+09:00  WARN 12656 --- [    Test worker] r$InitializeUserDetailsManagerConfigurer : Found 2 UserDetailsService beans, with names [customUserDetailService, userDetailsService]. Global Authentication Manager will not use a UserDetailsService for username/password login. Consider publishing a single UserDetailsService bean.
+2025-01-16T17:38:34.925+09:00  INFO 12656 --- [    Test worker] kdt.web_ide.WebIdeApplicationTests       : Started WebIdeApplicationTests in 2.676 seconds (process running for 3.327)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

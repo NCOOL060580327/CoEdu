@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver  # H2 드라이버 사용
+    url: jdbc:h2:tcp://localhost/~/test  # 인메모리 H2 DB 사용 (테스트용)
+    username: sa      # 기본 사용자명
+    password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.H2Dialect  # H2Dialect 설정
+jwt:
+  secret:
+    key: 780f7e25c9e36b276459459a13b081bbe121af603c2d039b4228739a690d399c75386d3d89f63a099ba817e3764fbf1c7bf744c060c24d2e812e10d511cc3b64
+    refresh: 4dedc73032e5574ca6133ddfd6c767b4d7567012482d21f3a268248209997fc52af16f46a3624da10116d9e3e6cacd2ae0750b468738d15e12ba9952d710a7af
