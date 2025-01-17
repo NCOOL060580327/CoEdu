@@ -1,4 +1,4 @@
-package kdt.web_ide.members.entity.repository;
+package kdt.web_ide.members.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

@@ -1,4 +1,4 @@
-package kdt.web_ide.members.dto;
+package kdt.web_ide.members.service.errorHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;

@@ -1,4 +1,4 @@
-package kdt.web_ide.members.service;
+package kdt.web_ide.members.service.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;

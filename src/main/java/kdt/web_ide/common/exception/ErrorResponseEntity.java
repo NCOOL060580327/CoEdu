@@ -1,4 +1,4 @@
-package kdt.web_ide.common.response;
+package kdt.web_ide.common.exception;
 
 
 import lombok.Builder;

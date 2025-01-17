@@ -1,2 +1,13 @@
-package kdt.web_ide.members.dto.request;public class LoginRequestDto {
+package kdt.web_ide.members.dto.request;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+public class LoginRequestDto {
+    String email;
+    String password;
 }
