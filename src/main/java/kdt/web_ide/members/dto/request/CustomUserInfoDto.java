@@ -12,6 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 public class CustomUserInfoDto {
     Long memberId;
-    String email;
+    String loginId;
     List<RoleType> roles; // 역할을 리스트로 변경
 }

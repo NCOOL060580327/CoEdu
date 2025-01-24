@@ -12,15 +12,15 @@ import java.util.List;
 public class MemberResponse {
     public MemberResponse(Member member) {
         this.memberId = member.getMemberId();
-        this.email = member.getEmail();
-        this.name = member.getName();
+        this.loginId = member.getLoginId();
+        this.nickName = member.getNickName();
         this.profileImage = member.getProfileImage();
     }
 
     private final Long memberId;
 
-    private final String email;
-    private final String name;
+    private final String loginId;
+    private final String nickName;
 
     private final String profileImage;
 

@@ -74,14 +74,14 @@ public class JwtProvider {
     public String createToken(RoleType role, CustomUserInfoDto member, Long expireTime) {
         Claims claims = Jwts.claims();
         claims.put("memberId", member.getMemberId());
-        claims.put("email", member.getEmail());
+        claims.put("loginId", member.getLoginId());
         claims.put("role", member.getRoles());
 
         Date now = new Date();
         return BEARER_PREFIX +
                 Jwts.builder()
                         .claim(AUTHORIZATION_KEY,role)
-                        .setSubject(member.getEmail())
+                        .setSubject(member.getLoginId())
                         .setClaims(claims)
                         .setExpiration(new Date(now.getTime() + expireTime))
                         .setIssuedAt(now)
@@ -145,12 +145,12 @@ public class JwtProvider {
 
     /**
      * 유저 정보 저장
-     * @param email
+     * @param loginId
      * @return
      */
 
-    public UsernamePasswordAuthenticationToken createUserAuthentication(String email) {
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+    public UsernamePasswordAuthenticationToken createUserAuthentication(String loginId) {
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(loginId);
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
@@ -162,7 +162,7 @@ public class JwtProvider {
     public TokenResponse createTokenByLogin(CustomUserInfoDto member) {
         String accessToken = createToken(RoleType.USER,member,TOKEN_TIME);
         String refreshToken = createToken(RoleType.USER,member,REFRESH_TOKEN_TIME);
-        return new TokenResponse(accessToken, refreshToken,member.getEmail());
+        return new TokenResponse(accessToken, refreshToken,member.getLoginId());
     }
 
 
@@ -170,7 +170,7 @@ public class JwtProvider {
      * 토큰 무효화 (블랙리스트에 추가)
      * @param token
      */
-    public void invalidateToken(String token,String email) {
+    public void invalidateToken(String token,String loginId) {
         if (validateToken(token)) {
             blacklistedTokens.add(token);
             log.info("Token invalidated: {}", token);

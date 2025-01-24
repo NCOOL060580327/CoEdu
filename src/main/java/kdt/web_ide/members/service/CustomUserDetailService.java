@@ -23,7 +23,7 @@ public class CustomUserDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userId) {
         log.info("User Name = {}", userId);
-        Member member = memberRepository.findByEmail(userId)
+        Member member = memberRepository.findByLoginId(userId)
                 .orElseThrow(() -> {
                     log.error("사용자를 찾을 수 없습니다: {}", userId);
                     return new CustomException(ErrorCode.USER_NOT_FOUND);
