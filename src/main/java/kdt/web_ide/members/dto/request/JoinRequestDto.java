@@ -11,31 +11,31 @@ import java.util.Collections;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
 public class JoinRequestDto {
-    @Email
-    private final String email;
-    @Pattern(regexp = "^[a-zA-Z0-9가-힣]{2,10}$", message = "이름은 최소 2자 이상, 10자 이하이며, 영문, 숫자, 한글만 입력하세요.")
-    private final String name;
+
+    private final String loginId;
+    @Pattern(regexp = "^[a-zA-Z0-9가-힣]{2,10}$", message = "닉네임은 최소 2자 이상, 10자 이하이며, 영문, 숫자, 한글만 입력하세요.")
+    private final String nickName;
 
 
-    @Pattern(regexp = "(?=.*[a-zA-Z])(?=.*[0-9])^[a-zA-Z0-9~!@#$%^&*()+|=]{8,15}$", message = "비밀번호는 최소 8자 이상, 15자 이하이며, 영문과 숫자, 특수문자만 입력하세요.")
+    @Pattern(regexp = "(?=.*[a-zA-Z])(?=.*[0-9])^[a-zA-Z0-9~!@#$%^&*()+|=]{8}$", message = "비밀번호는 8자, 소문자와 숫자만 입력하세요.")
     private final String password;
 
-    @Pattern(regexp = "(?=.*[a-zA-Z])(?=.*[0-9])^[a-zA-Z0-9~!@#$%^&*()+|=]{8,15}$", message = "비밀번호를 확인해주세요.")
+    @Pattern(regexp = "(?=.*[a-zA-Z])(?=.*[0-9])^[a-zA-Z0-9~!@#$%^&*()+|=]{8}$", message = "비밀번호를 확인해주세요.")
     private final String password2;
 
     @Builder
-    public JoinRequestDto(String email,String name, String password, String password2){
-        this.email = email;
-        this.name = name;
+    public JoinRequestDto(String loginId,String nickName, String password, String password2){
+        this.loginId = loginId;
+        this.nickName = nickName;
         this.password = password;
         this.password2 = password2;
     }
 
     public Member toEntity(RoleType role, String encodedPassword){
         return Member.builder()
-                .email(email)
+                .loginId(loginId)
                 .password(encodedPassword)
-                .name(name)
+                .nickName(nickName)
                 .roles(Collections.singletonList(role))
                 .build();
     }

@@ -1,10 +1,9 @@
 package kdt.web_ide.members.entity;
 
 import jakarta.persistence.*;
+import kdt.web_ide.BaseTimeEntity;
 import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import javax.management.relation.Role;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,20 +11,20 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @Builder
-@Table(name = "Members")
+@Table(name = "members")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member {
+public class Member extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberId;
 
     @Column(nullable = false, unique = true)
-    private String name;
+    private String nickName;
     @Column(nullable = false, unique = true)
-    private String email;
+    private String loginId;
     private String password;
 
-    @Setter
+    @Column(name = "profile_img")
     private String profileImage;
 
     public void encodePassword(PasswordEncoder passwordEncoder) {
@@ -36,4 +35,15 @@ public class Member {
     @CollectionTable(name = "member_roles", joinColumns = @JoinColumn(name = "member_id"))
     @Enumerated(EnumType.STRING)
     private List<RoleType> roles = new ArrayList<>();
+
+    public void updateImage(String profileImage){
+        this.profileImage = profileImage;
+    }
+
+    public void updateNickName(String nickName) { this.nickName = nickName; }
+
+    public void updateLoginId(String loginId){
+        this.loginId = loginId;
+    }
+
 }
