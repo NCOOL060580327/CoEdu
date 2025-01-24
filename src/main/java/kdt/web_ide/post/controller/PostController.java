@@ -2,6 +2,7 @@ package kdt.web_ide.post.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kdt.web_ide.members.service.CustomUserDetails;
 import kdt.web_ide.post.dto.PostRequestDto;
 import kdt.web_ide.post.dto.PostResponseDto;
 import kdt.web_ide.post.service.PostService;
@@ -12,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -27,7 +29,6 @@ public class PostController {
     public ResponseEntity<PostResponseDto> createPost(
             @RequestBody PostRequestDto requestDto,
             @AuthenticationPrincipal UserDetails userDetails) {
-        validateUser(userDetails);
         PostResponseDto response = postService.createPost(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -36,43 +37,36 @@ public class PostController {
     @Operation(summary = "게시글 조회", description = "특정 ID의 게시글을 조회합니다.")
     public ResponseEntity<PostResponseDto> getPost(
             @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        validateUser(userDetails);
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         PostResponseDto response = postService.getPostById(id);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
     @Operation(summary = "전체 게시글 조회", description = "모든 게시글을 조회합니다.")
-    public ResponseEntity<List<PostResponseDto>> getAllPosts(@AuthenticationPrincipal UserDetails userDetails) {
-        validateUser(userDetails);
+    public ResponseEntity<List<PostResponseDto>> getAllPosts(@AuthenticationPrincipal CustomUserDetails userDetails) {
         List<PostResponseDto> response = postService.getAllPosts();
         return ResponseEntity.ok(response);
     }
 
-    private void validateUser(UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new RuntimeException("Unauthorized: User details are missing.");
-        }
-    }
 
     @GetMapping("/{id}/download")
     @Operation(summary = "게시글 파일 다운로드", description = "특정 게시글의 파일을 다운로드합니다.")
-    public ResponseEntity<String> downloadPostFile(@PathVariable Long id) {
+    public ResponseEntity<String> downloadPostFile(@PathVariable Long id,@AuthenticationPrincipal CustomUserDetails userDetails) {
         String fileContent = postService.downloadFile(id);
         return ResponseEntity.ok(fileContent);
     }
 
     @PostMapping("/{id}/execute")
     @Operation(summary = "게시글 파일 실행", description = "특정 게시글의 파일을 실행합니다.")
-    public ResponseEntity<String> executePostFile(@PathVariable Long id, @RequestBody(required = false) String input) {
+    public ResponseEntity<String> executePostFile(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails,@RequestBody(required = false) String input) throws IOException, InterruptedException {
         String output = postService.executeFile(id, input);
         return ResponseEntity.ok(output);
     }
 
     @PutMapping("/{id}/modify")
     @Operation(summary = "게시글 파일 수정", description = "특정 게시글의 파일을 수정합니다.")
-    public ResponseEntity<String> modifyPostFile(@PathVariable Long id, @RequestBody String newContent) {
+    public ResponseEntity<String> modifyPostFile(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails,@RequestBody String newContent) {
         postService.modifyFileContent(id, newContent);
         return ResponseEntity.ok("File modified successfully.");
     }

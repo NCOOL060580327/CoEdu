@@ -1,5 +1,7 @@
 package kdt.web_ide.post.service;
 
+import kdt.web_ide.boards.entity.Board;
+import kdt.web_ide.boards.entity.BoardRepository;
 import kdt.web_ide.common.exception.CustomException;
 import kdt.web_ide.common.exception.ErrorCode;
 import kdt.web_ide.file.service.S3Service;
@@ -10,8 +12,8 @@ import kdt.web_ide.post.entity.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,15 +26,21 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final BoardRepository boardRepository; // BoardRepository 추가
     private final S3Service s3Service;
 
     public PostResponseDto createPost(PostRequestDto requestDto) {
-        // 파일 제목 자동 생성
-        String fileName = generateFileName(requestDto.getName(), String.valueOf(requestDto.getLanguage()));
-        String filePath = uploadEmptyFileToS3(fileName, requestDto.getBoardId());
+        // 게시판 조회
+        Board board = boardRepository.findById(requestDto.getBoardId())
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND, "Board not found for ID: " + requestDto.getBoardId()));
 
+        // 파일 제목 생성 및 빈 파일 업로드
+        String fileName = generateFileName(requestDto.getName(), String.valueOf(requestDto.getLanguage()));
+        String filePath = uploadEmptyFileToS3(fileName, board.getId());
+
+        // 게시글 생성
         Post post = Post.builder()
-                .boardId(requestDto.getBoardId())
+                .board(board)
                 .name(requestDto.getName())
                 .language(requestDto.getLanguage())
                 .filePath(filePath)
@@ -44,7 +52,7 @@ public class PostService {
 
     public PostResponseDto getPostById(Long id) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND, "Post not found for ID: " + id));
         return mapToResponseDto(post);
     }
 
@@ -54,14 +62,14 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    private String uploadEmptyFileToS3(String fileName, Integer boardId) {
+    private String uploadEmptyFileToS3(String fileName, Long boardId) {
         try {
             String s3Path = "boards/" + boardId + "/" + fileName;
             ByteArrayInputStream emptyContent = new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8));
             s3Service.uploadFile(emptyContent, s3Path, "text/plain");
             return s3Path;
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.POST_NOT_FOUND);
+            throw new CustomException(ErrorCode.S3_UPLOAD_ERROR, "Failed to upload empty file to S3 for file: " + fileName);
         }
     }
 
@@ -84,7 +92,7 @@ public class PostService {
     private PostResponseDto mapToResponseDto(Post post) {
         return PostResponseDto.builder()
                 .id(post.getId())
-                .boardId(post.getBoardId())
+                .boardId(post.getBoard().getId().intValue()) // Board와 매핑
                 .name(post.getName())
                 .language(post.getLanguage())
                 .filePath(post.getFilePath())
@@ -94,21 +102,20 @@ public class PostService {
 
     public String downloadFile(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND, "Post not found for ID: " + postId));
         return s3Service.getFileUrl(post.getFilePath());
     }
 
-    public String executeFile(Long postId, String input) {
+    public String executeFile(Long postId, String input) throws IOException, InterruptedException {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND, "Post not found for ID: " + postId));
         return s3Service.executeFile(post.getFilePath(), input);
+
     }
 
     public void modifyFileContent(Long postId, String newContent) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND, "Post not found for ID: " + postId));
         s3Service.modifyFileContent(post.getFilePath(), newContent);
     }
 }
-
-
