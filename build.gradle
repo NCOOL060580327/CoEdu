@@ -47,10 +47,16 @@ dependencies {
 	// mysql
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
+	// websocket
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
+	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.16.1'
+	implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
+
 	//s3
 	implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.1.1'
 	implementation 'software.amazon.awssdk:s3:2.20.40'
-
 }
 
 tasks.named('test') {

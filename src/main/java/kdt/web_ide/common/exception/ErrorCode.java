@@ -22,6 +22,10 @@ public enum ErrorCode {
     INVALID_IMAGE(HttpStatus.BAD_REQUEST,"ACCOUNT-010" , "유효하지 않은 이미지입니다."),
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "ACCOUNT-011", "유효하지 않은 이미지입니다."),
 
+    // 채팅방
+
+    CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "ACCOUNT-008", "채팅방을 찾을 수 없습니다."),
+
     // 게시판
 
     MEMBER_ALREADY_IN_BOARD(HttpStatus.BAD_REQUEST,"BOARD-001","이미 게시판에 초대된 멤버입니다."),

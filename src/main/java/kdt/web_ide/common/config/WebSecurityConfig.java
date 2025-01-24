@@ -63,7 +63,7 @@ public class WebSecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/chatting/**", "/api/chat/room").permitAll()
                         //  인증이 필요한 경로 (JWT 필요)
                         .requestMatchers("/admin/**").hasRole("ADMIN") // 관리자 페이지 권한 설정
                         .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
@@ -80,7 +80,7 @@ public class WebSecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("*");
+        configuration.addAllowedOriginPattern("*");
         configuration.addAllowedHeader("*"); // 모든 헤더 허용
         configuration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
         configuration.setAllowCredentials(true); // 인증 정보 포함 요청 허용
