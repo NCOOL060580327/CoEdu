@@ -57,6 +57,7 @@ public class PostController {
         return ResponseEntity.ok(fileContent);
     }
 
+    @CrossOrigin
     @PostMapping("/{id}/execute")
     @Operation(summary = "게시글 파일 실행", description = "특정 게시글의 파일을 실행합니다.")
     public ResponseEntity<String> executePostFile(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails,@RequestBody(required = false) String input) throws IOException, InterruptedException {
