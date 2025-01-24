@@ -33,12 +33,12 @@ public class JwtAuthFilter extends GenericFilterBean {
         String token = jwtProvider.resolveToken(httpRequest);
 
         if (token != null && jwtProvider.validateToken(token)) {
-            // JWT 토큰에서 이메일 추출
+            // JWT 토큰에서 loginId 추철
             Claims claims = jwtProvider.getUserInfoFromToken(token);
-            String email = claims.get("email", String.class);
+            String loginId = claims.get("loginId", String.class);
 
-            if (email != null) {
-                Authentication authentication = jwtProvider.createUserAuthentication(email);
+            if (loginId != null) {
+                Authentication authentication = jwtProvider.createUserAuthentication(loginId);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
