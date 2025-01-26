@@ -2,12 +2,14 @@ package kdt.web_ide.chat.entity;
 
 import jakarta.persistence.*;
 import kdt.web_ide.members.entity.Member;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class ChatRoomMember {
 
     @Id

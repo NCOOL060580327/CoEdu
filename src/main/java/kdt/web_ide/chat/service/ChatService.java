@@ -52,12 +52,6 @@ public class ChatService {
     }
 
     @Transactional
-    public void createChatRoom() {
-        ChatRoom chatRoom = new ChatRoom();
-        chatRoomRepository.save(chatRoom);
-    }
-
-    @Transactional
     public List<GetChatMessageResponseDto> getChatMessage(Long roomId, Long memberId) {
 
         chatRoomRepository.findById(roomId)

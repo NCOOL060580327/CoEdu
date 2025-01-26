@@ -2,9 +2,15 @@ package kdt.web_ide.post.service;
 
 import kdt.web_ide.boards.entity.Board;
 import kdt.web_ide.boards.entity.BoardRepository;
+import kdt.web_ide.chat.entity.ChatRoom;
+import kdt.web_ide.chat.entity.ChatRoomMember;
+import kdt.web_ide.chat.entity.repository.ChatRoomMemberRepository;
+import kdt.web_ide.chat.entity.repository.ChatRoomRepository;
 import kdt.web_ide.common.exception.CustomException;
 import kdt.web_ide.common.exception.ErrorCode;
 import kdt.web_ide.file.service.S3Service;
+import kdt.web_ide.members.entity.Member;
+import kdt.web_ide.members.entity.repository.MemberRepository;
 import kdt.web_ide.post.dto.PostRequestDto;
 import kdt.web_ide.post.dto.PostResponseDto;
 import kdt.web_ide.post.entity.Post;
@@ -28,6 +34,9 @@ public class PostService {
     private final PostRepository postRepository;
     private final BoardRepository boardRepository; // BoardRepository 추가
     private final S3Service s3Service;
+    private final MemberRepository memberRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatRoomMemberRepository chatRoomMemberRepository;
 
     public PostResponseDto createPost(PostRequestDto requestDto) {
         // 게시판 조회
@@ -47,6 +56,24 @@ public class PostService {
                 .build();
 
         Post savedPost = postRepository.save(post);
+
+        ChatRoom chatRoom = ChatRoom.builder()
+                .post(post)
+                .build();
+
+        chatRoomRepository.save(chatRoom);
+
+        List<Member> boardMemberList = memberRepository.findMemberListByBoardId(board.getId());
+
+        List<ChatRoomMember> chatRoomMemberList = boardMemberList.stream()
+                .map(member -> ChatRoomMember.builder()
+                        .chatRoom(chatRoom)
+                        .member(member)
+                        .build())
+                .toList();
+
+        chatRoomMemberRepository.saveAll(chatRoomMemberList);
+
         return mapToResponseDto(savedPost);
     }
 

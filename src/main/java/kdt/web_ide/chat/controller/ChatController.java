@@ -31,13 +31,6 @@ public class ChatController {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    // 채팅방 생성
-    @PostMapping("/room")
-    public ResponseEntity<Void> createChatRoom() {
-        chatService.createChatRoom();
-        return ResponseEntity.status(HttpStatus.OK).body(null);
-    }
-
     // 채팅방 채팅 조회
     @GetMapping("/{roomId}")
     public ResponseEntity<List<GetChatMessageResponseDto>> getChatMessage(@PathVariable("roomId") Long roomId, @AuthenticationPrincipal CustomUserDetails userDetails) {
