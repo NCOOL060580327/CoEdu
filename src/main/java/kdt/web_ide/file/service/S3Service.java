@@ -107,6 +107,25 @@ public class S3Service {
         return localFilePath.toString();
     }
 
+    public String getFileContent(String filePath) {
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(filePath)
+                    .build();
+
+            ResponseBytes<GetObjectResponse> s3ObjectBytes = amazonS3.getObjectAsBytes(getObjectRequest);
+            return new String(s3ObjectBytes.asByteArray(), StandardCharsets.UTF_8);
+        } catch (NoSuchKeyException e) {
+            log.error("File not found in S3. FilePath: {}", filePath, e);
+            throw new CustomException(ErrorCode.S3_FILE_NOT_FOUND, "File not found in S3");
+        } catch (S3Exception e) {
+            log.error("Error accessing S3. FilePath: {}", filePath, e);
+            throw new CustomException(ErrorCode.S3_ACCESS_ERROR, "Error accessing S3: " + e.awsErrorDetails().errorMessage());
+        }
+    }
+
+
     private void deleteLocalFile(String localFilePath) {
         try {
             Files.deleteIfExists(Paths.get(localFilePath));

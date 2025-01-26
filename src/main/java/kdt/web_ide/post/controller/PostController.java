@@ -52,7 +52,7 @@ public class PostController {
 
     @GetMapping("/{id}/download")
     @Operation(summary = "게시글 파일 다운로드", description = "특정 게시글의 파일을 다운로드합니다.")
-    public ResponseEntity<String> downloadPostFile(@PathVariable Long id,@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<String> downloadPostFile(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
         String fileContent = postService.downloadFile(id);
         return ResponseEntity.ok(fileContent);
     }
@@ -60,17 +60,30 @@ public class PostController {
     @CrossOrigin
     @PostMapping("/{id}/execute")
     @Operation(summary = "게시글 파일 실행", description = "특정 게시글의 파일을 실행합니다.")
-    public ResponseEntity<String> executePostFile(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails,@RequestBody(required = false) String input) throws IOException, InterruptedException {
+    public ResponseEntity<String> executePostFile(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody(required = false) String input) throws IOException, InterruptedException {
         String output = postService.executeFile(id, input);
         return ResponseEntity.ok(output);
     }
 
     @PutMapping("/{id}/modify")
     @Operation(summary = "게시글 파일 수정", description = "특정 게시글의 파일을 수정합니다.")
-    public ResponseEntity<String> modifyPostFile(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails,@RequestBody String newContent) {
+    public ResponseEntity<String> modifyPostFile(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody String newContent) {
         postService.modifyFileContent(id, newContent);
         return ResponseEntity.ok("File modified successfully.");
     }
 
+    @PutMapping("/{id}/update")
+    @Operation(summary = "게시글 수정", description = "특정 게시글을 수정합니다.")
+    public ResponseEntity<String> updatePost(@PathVariable Long id, @RequestBody PostRequestDto requestDto, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        postService.modifyPostNameAndLanguage(id, requestDto.getName(), requestDto.getLanguage());
+        return ResponseEntity.ok("Post updated successfully.");
+    }
+
+    @GetMapping("/{id}/content")
+    @Operation(summary = "게시글 파일 내용 조회", description = "특정 게시글의 파일 내용을 조회합니다.")
+    public ResponseEntity<String> getFileContent(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        String content = postService.getFileContent(id);
+        return ResponseEntity.ok(content);
+    }
 
 }
