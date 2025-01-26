@@ -56,22 +56,22 @@ public class S3Service {
 
     public String executeFile(String filePath, String input) {
         log.info("Starting file execution. FilePath: {}, Input: {}", filePath, input);
+        String localFilePath = null;
         try {
-            // S3 파일 다운로드
+            // S3에서 파일 다운로드
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(bucketName)
                     .key(filePath)
                     .build();
-
             ResponseBytes<GetObjectResponse> s3ObjectBytes = amazonS3.getObjectAsBytes(getObjectRequest);
             InputStream inputStream = new ByteArrayInputStream(s3ObjectBytes.asByteArray());
-
             log.info("File downloaded from S3. FilePath: {}", filePath);
 
-            String localFilePath = saveFileLocally(filePath, inputStream);
+            // 로컬 파일 저장
+            localFilePath = saveFileLocally(filePath, inputStream);
             log.info("File saved locally at: {}", localFilePath);
 
-            // 실행 로직
+            // 파일 실행
             String result = compileAndRun(localFilePath, input);
             log.info("File execution completed. Result: {}", result);
             return result;
@@ -84,6 +84,10 @@ public class S3Service {
         } catch (Exception e) {
             log.error("Error during file execution. FilePath: {}, Input: {}", filePath, input, e);
             throw new CustomException(ErrorCode.FILE_EXECUTION_ERROR, e.getMessage());
+        } finally {
+            if (localFilePath != null) {
+                deleteLocalFile(localFilePath);
+            }
         }
     }
 
@@ -103,22 +107,28 @@ public class S3Service {
         return localFilePath.toString();
     }
 
+    private void deleteLocalFile(String localFilePath) {
+        try {
+            Files.deleteIfExists(Paths.get(localFilePath));
+            log.info("Deleted local file: {}", localFilePath);
+        } catch (IOException e) {
+            log.error("Failed to delete local file: {}", localFilePath, e);
+        }
+    }
+
     private String compileAndRun(String localFilePath, String input) throws IOException, InterruptedException {
         String extension = getFileExtension(localFilePath);
         log.info("Compiling and running file. FilePath: {}, Extension: {}", localFilePath, extension);
-        switch (extension) {
-            case "java":
-                return compileAndRunJava(localFilePath, input);
-            case "py":
-                return runPython(localFilePath, input);
-            case "js":
-                return runJavaScript(localFilePath, input);
-            case "cpp":
-                return compileAndRunCpp(localFilePath, input);
-            default:
+        return switch (extension) {
+            case "java" -> compileAndRunJava(localFilePath, input);
+            case "py" -> runPython(localFilePath, input);
+            case "js" -> runJavaScript(localFilePath, input);
+            case "cpp" -> compileAndRunCpp(localFilePath, input);
+            default -> {
                 log.error("Unsupported file type: {}", extension);
                 throw new CustomException(ErrorCode.FILE_EXTENSION_ERROR);
-        }
+            }
+        };
     }
 
     private String compileAndRunJava(String localFilePath, String input) throws IOException, InterruptedException {
@@ -172,7 +182,7 @@ public class S3Service {
             }
         }
 
-        if (errorOutput.length() > 0) {
+        if (!errorOutput.isEmpty()) {
             log.error("Process error output: {}", errorOutput);
             throw new CustomException(ErrorCode.FILE_EXECUTION_ERROR, errorOutput.toString());
         }
