@@ -15,5 +15,6 @@ public class PostResponseDto {
     private Language language;
     private String filePath;
     private String createdAt;
+    private Integer roomId;
 }
 

@@ -1,20 +1,27 @@
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://13.125.217.93:3306/kdt?serverTimezone=Asia/Seoul&characterEncoding=UTF-8  # 변경 필요
+    username: kdt
+    password: 1234
   jpa:
-    database-platform: ${SPRING_JPA_DATABASE_PLATFORM}
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    open-in-view: false
     hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
 jwt:
   secret:
-    key: ${JWT_SECRET_KEY}
-    refresh: ${JWT_REFRESH_KEY}
+    key: 780f7e25c9e36b276459459a13b081bbe121af603c2d039b4228739a690d399c75386d3d89f63a099ba817e3764fbf1c7bf744c060c24d2e812e10d511cc3b64
+    refresh: 4dedc73032e5574ca6133ddfd6c767b4d7567012482d21f3a268248209997fc52af16f46a3624da10116d9e3e6cacd2ae0750b468738d15e12ba9952d710a7af
 cloud:
   aws:
-    access-key: ${AWS_ACCESS_KEY}
-    secret-key: ${AWS_SECRET_KEY}
-    region: ${AWS_REGION}
+    access-key: AKIAVRUVSGSD5BHPK6TZ
+    secret-key: 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
+    region: ap-northeast-2
     s3:
-      bucket: ${AWS_S3_BUCKET}
+      bucket: ide-project-bucket
