@@ -1,6 +1,7 @@
 package kdt.web_ide.members.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import kdt.web_ide.members.dto.request.JoinRequestDto;
 import kdt.web_ide.members.dto.request.LoginRequestDto;
 import kdt.web_ide.members.dto.response.LoginResponseDto;
@@ -19,6 +20,7 @@ import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "회원 API")
 @RequestMapping("/api/auth")
 public class MemberController {
 

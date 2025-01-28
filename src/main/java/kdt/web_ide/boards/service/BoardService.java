@@ -16,6 +16,7 @@ import kdt.web_ide.members.entity.Member;
 import kdt.web_ide.members.entity.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +48,7 @@ public class BoardService {
         // 수정 권한 확인 (리더만 수정 가능)
         BoardUser boardUser = boardUserRepository.findByMemberAndBoardAndIsLeaderTrue(member, board)
                 .orElseThrow(() -> new CustomException(ErrorCode.NO_PERMISSION));
-        board.update(requestDto.getTitle());
+        board.update(requestDto.getTitle(),requestDto.getTitleText());
         return new BoardResponseDto(board);
     }
 

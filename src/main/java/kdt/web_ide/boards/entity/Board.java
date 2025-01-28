@@ -23,16 +23,20 @@ public class Board extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     private String title;
     @Builder.Default
+    @Column(name = "user_count")
     private int userCount = 1;
+
+    @Column(name = "title_text")
+    private String titleText;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
 
-    public void update(String title){
+    public void update(String title,String titleText){
         this.title = title;
+        this.titleText = titleText;
     }
 
 }

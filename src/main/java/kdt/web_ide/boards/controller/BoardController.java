@@ -1,6 +1,7 @@
 package kdt.web_ide.boards.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import kdt.web_ide.boards.dto.request.BoardSaveRequesetDto;
 import kdt.web_ide.boards.dto.request.BoardUpdateRequestDto;
@@ -19,12 +20,13 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "게시판 API")
 @RequestMapping("/api/boards")
 public class BoardController {
 
     private final BoardService boardService;
 
-    @Operation(summary = "게시판 생성 API입니다.", description = "게시판 제목 입력은 필수입니다.")
+    @Operation(summary = "게시판 생성 API", description = "게시판 제목 입력은 필수입니다.")
     @PostMapping("")
     public ResponseEntity<?> saveBoard(
             @RequestBody BoardSaveRequesetDto requestDto,
@@ -58,7 +60,7 @@ public class BoardController {
     }
 
     // 게시판 인원 초대
-    @Operation(summary = "게시판 멤버 초대 API", description = "멤버를 초대합니다. 리더만 초대 가능합니다.")
+    @Operation(summary = "게시판 멤버 초대 API", description = "이메일로 멤버를 초대합니다. 리더만 초대 가능합니다.")
     @PostMapping("/{boardId}/invite")
     public ResponseEntity<BoardUserResponseDto> inviteMember(
             @PathVariable Long boardId,
@@ -68,7 +70,6 @@ public class BoardController {
         BoardUserResponseDto invitedUser = boardService.inviteMember(requestDto, boardId, userDetails.getMember());
         return ResponseEntity.ok(invitedUser);
     }
-
     // 게시판 인원 조회
     @Operation(summary = "게시판 인원 조회 API", description = "해당 게시판의 모든 멤버를 조회합니다.")
     @GetMapping("/{boardId}/members")
@@ -111,6 +112,7 @@ public class BoardController {
         List<BoardResponseDto> myBoards = boardService.getMyBoards(userDetails.getMember());
         return ResponseEntity.ok(myBoards);
     }
+
 
 
 }
