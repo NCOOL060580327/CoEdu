@@ -19,13 +19,17 @@ public class Board extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     private String title;
     @Builder.Default
+    @Column(name = "user_count")
     private int userCount = 1;
 
-    public void update(String title){
+    @Column(name = "title_text")
+    private String titleText;
+
+    public void update(String title,String titleText){
         this.title = title;
+        this.titleText = titleText;
     }
 
 }
