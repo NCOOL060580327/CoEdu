@@ -6,19 +6,20 @@ import lombok.Builder;
 import java.time.format.DateTimeFormatter;
 
 @Builder
-public record GetChatMessageResponseDto(String messageText,
-                                        String sendTime,
-                                        Long memberId,
-                                        String name,
-                                        String profileImage
+public record GetChatMessageResponseDto(
+        Long senderId,
+        String messageText,
+        String memberProfileImageUrl,
+        String memberNickname,
+        String sendTime
 ) {
     public static GetChatMessageResponseDto fromChatMessage(ChatMessage chatMessage) {
         return GetChatMessageResponseDto.builder()
+                .senderId(chatMessage.getSender().getMemberId())
                 .messageText(chatMessage.getMessageText())
+                .memberProfileImageUrl(chatMessage.getSender().getProfileImage())
+                .memberNickname(chatMessage.getSender().getNickName())
                 .sendTime(chatMessage.getSendTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                .memberId(chatMessage.getSender().getMemberId())
-                .name(chatMessage.getSender().getNickName())
-                .profileImage(chatMessage.getSender().getProfileImage())
                 .build();
     }
 }
