@@ -1,5 +1,7 @@
 package kdt.web_ide.post.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kdt.web_ide.members.service.CustomUserDetails;
@@ -7,6 +9,7 @@ import kdt.web_ide.post.dto.PostRequestDto;
 import kdt.web_ide.post.dto.PostResponseDto;
 import kdt.web_ide.post.service.PostService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.message.SimpleMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
@@ -93,9 +97,11 @@ public class PostController {
         return ResponseEntity.ok(content);
     }
 
+
     @MessageMapping("/posts/edit/{id}")
     public void editPostContent(@DestinationVariable("id") Long id, @Payload String newContent) {
-        postService.editPostContent(id, newContent);
+        postService.parsingAndModifyPostContent(id, newContent);
+        simpMessagingTemplate.convertAndSend("/ide/edit/" + id, newContent);
     }
 
     @MessageMapping("/posts/{id}/run")

@@ -19,6 +19,7 @@ import kdt.web_ide.post.entity.Language;
 import kdt.web_ide.post.entity.Post;
 import kdt.web_ide.post.entity.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -42,7 +44,6 @@ public class PostService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final ObjectMapper objectMapper;
-    private final SimpMessagingTemplate simpMessagingTemplate;
 
     public PostResponseDto createPost(PostRequestDto requestDto) {
         // 게시판 조회
@@ -173,21 +174,21 @@ public class PostService {
         return s3Service.getFileContent(post.getFilePath());
     }
 
-    public void editPostContent(Long id, String payload) {
+    public void parsingAndModifyPostContent(Long id, String payload) {
         try {
             // JSON 파싱
             JsonNode jsonNode = objectMapper.readTree(payload);
             String newContent = jsonNode.get("newContent").asText();
+
+            log.info("newContent: {}", newContent);
 
             // Post 존재 여부 확인
             Post post = postRepository.findById(id)
                     .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
 
             // 파일 내용 수정
-            s3Service.modifyFileContent(post.getFilePath(), newContent);
+            modifyFileContent(Long.valueOf(post.getId()), newContent);
 
-            // 변경된 내용을 구독자에게 전송
-            simpMessagingTemplate.convertAndSend("/ide/edit/" + id, newContent);
         } catch (IOException e) {
             throw new CustomException(ErrorCode.JSON_PROCESSING_ERROR);
         }
