@@ -18,13 +18,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/room"); // 메세지 송신
+        registry.enableSimpleBroker("/room","/ide"); // 메세지 송신
         registry.setApplicationDestinationPrefixes("/send"); // 메세지 수신
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/chatting").setAllowedOriginPatterns("*").withSockJS();
+        registry.addEndpoint("/ide").setAllowedOriginPatterns("*").withSockJS();
     }
 
     @Override

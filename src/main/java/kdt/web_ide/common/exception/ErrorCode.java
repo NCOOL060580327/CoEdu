@@ -41,7 +41,8 @@ public enum ErrorCode {
     S3_ACCESS_ERROR(HttpStatus.BAD_REQUEST, "S3-005", "S3 접근 권한이 없습니다."),
 
     // 게시글
-    POST_NOT_FOUND(HttpStatus.NOT_FOUND, "POST-001", "게시글을 찾을 수 없습니다.");
+    POST_NOT_FOUND(HttpStatus.NOT_FOUND, "POST-001", "게시글을 찾을 수 없습니다."),
+    JSON_PROCESSING_ERROR(HttpStatus.BAD_REQUEST, "POST-002", "JSON 파싱 에러");
 
 
 
