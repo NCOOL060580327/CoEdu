@@ -80,18 +80,25 @@ public class PostService {
 
         chatRoomMemberRepository.saveAll(chatRoomMemberList);
 
-        return mapToResponseDto(savedPost);
+        return mapToResponseDto(savedPost, chatRoom.getChatRoomId().intValue());
     }
 
     public PostResponseDto getPostById(Long id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
-        return mapToResponseDto(post);
+
+        ChatRoom chatRoom = chatRoomRepository.findChatRoomByPost_Id(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.CHATROOM_NOT_FOUND));
+
+        return mapToResponseDto(post, chatRoom.getChatRoomId().intValue());
     }
 
     public List<PostResponseDto> getAllPosts() {
         return postRepository.findAll().stream()
-                .map(this::mapToResponseDto)
+                .map(post -> {
+                    ChatRoom chatRoom = chatRoomRepository.findChatRoomByPost_Id(post.getId().longValue()).orElseThrow(() -> new CustomException(ErrorCode.CHATROOM_NOT_FOUND));
+                    return mapToResponseDto(post, chatRoom.getChatRoomId().intValue());
+                })
                 .collect(Collectors.toList());
     }
 
@@ -122,7 +129,7 @@ public class PostService {
         };
     }
 
-    private PostResponseDto mapToResponseDto(Post post) {
+    private PostResponseDto mapToResponseDto(Post post, Integer roomId) {
         return PostResponseDto.builder()
                 .id(post.getId())
                 .boardId(post.getBoard().getId().intValue())
@@ -130,6 +137,7 @@ public class PostService {
                 .language(post.getLanguage())
                 .filePath(post.getFilePath())
                 .createdAt(post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .roomId(roomId)
                 .build();
     }
 

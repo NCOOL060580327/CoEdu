@@ -44,7 +44,7 @@ public class ChatService {
 
         ChatMessage message = saveMessage(chatRoom, sender, messageText);
 
-        simpMessagingTemplate.convertAndSend("/room/chat/" + chatRoomId, message);
+        simpMessagingTemplate.convertAndSend("/room/chat/" + chatRoomId, GetChatMessageResponseDto.fromChatMessage(message));
 
         chatRoomMemberRepository.incrementNotReadCount(chatRoomId, senderId);
 
