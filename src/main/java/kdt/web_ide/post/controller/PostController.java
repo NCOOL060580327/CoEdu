@@ -1,5 +1,7 @@
 package kdt.web_ide.post.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kdt.web_ide.members.service.CustomUserDetails;
@@ -7,8 +9,15 @@ import kdt.web_ide.post.dto.PostRequestDto;
 import kdt.web_ide.post.dto.PostResponseDto;
 import kdt.web_ide.post.service.PostService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.message.SimpleMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
@@ -23,6 +33,7 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @PostMapping
     @Operation(summary = "게시글 작성", description = "새로운 게시글을 작성하고 빈 파일을 S3에 생성합니다.")
@@ -84,6 +95,19 @@ public class PostController {
     public ResponseEntity<String> getFileContent(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
         String content = postService.getFileContent(id);
         return ResponseEntity.ok(content);
+    }
+
+
+    @MessageMapping("/posts/edit/{id}")
+    public void editPostContent(@DestinationVariable("id") Long id, @Payload String newContent) {
+        postService.parsingAndModifyPostContent(id, newContent);
+        simpMessagingTemplate.convertAndSend("/ide/edit/" + id, newContent);
+    }
+
+    @MessageMapping("/posts/{id}/run")
+    @SendTo("/topic/posts/{id}/output")
+    public String runPostContent(@PathVariable Long id, String input) throws IOException, InterruptedException {
+        return postService.executeFile(id, input);
     }
 
 }

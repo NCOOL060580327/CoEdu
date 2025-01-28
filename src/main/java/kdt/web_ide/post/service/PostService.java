@@ -1,5 +1,7 @@
 package kdt.web_ide.post.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kdt.web_ide.boards.entity.Board;
 import kdt.web_ide.boards.entity.BoardRepository;
 import kdt.web_ide.chat.entity.ChatRoom;
@@ -17,6 +19,8 @@ import kdt.web_ide.post.entity.Language;
 import kdt.web_ide.post.entity.Post;
 import kdt.web_ide.post.entity.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -28,6 +32,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -38,6 +43,7 @@ public class PostService {
     private final MemberRepository memberRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
+    private final ObjectMapper objectMapper;
 
     public PostResponseDto createPost(PostRequestDto requestDto) {
         // 게시판 조회
@@ -167,5 +173,26 @@ public class PostService {
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
         return s3Service.getFileContent(post.getFilePath());
     }
+
+    public void parsingAndModifyPostContent(Long id, String payload) {
+        try {
+            // JSON 파싱
+            JsonNode jsonNode = objectMapper.readTree(payload);
+            String newContent = jsonNode.get("newContent").asText();
+
+            log.info("newContent: {}", newContent);
+
+            // Post 존재 여부 확인
+            Post post = postRepository.findById(id)
+                    .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+
+            // 파일 내용 수정
+            modifyFileContent(Long.valueOf(post.getId()), newContent);
+
+        } catch (IOException e) {
+            throw new CustomException(ErrorCode.JSON_PROCESSING_ERROR);
+        }
+    }
+
 
 }
