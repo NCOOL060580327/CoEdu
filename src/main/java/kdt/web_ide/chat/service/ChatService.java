@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +45,9 @@ public class ChatService {
 
         ChatMessage message = saveMessage(chatRoom, sender, messageText);
 
-        simpMessagingTemplate.convertAndSend("/room/chat/" + chatRoomId, GetChatMessageResponseDto.fromChatMessage(message));
+        CompletableFuture.runAsync(() -> {
+            simpMessagingTemplate.convertAndSend("/room/" + chatRoomId, GetChatMessageResponseDto.fromChatMessage(message));
+        });
 
         chatRoomMemberRepository.incrementNotReadCount(chatRoomId, senderId);
 
