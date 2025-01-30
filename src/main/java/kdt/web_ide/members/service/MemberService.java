@@ -131,7 +131,6 @@ public class MemberService {
         }
         String uploadedUrl = s3Uploader.upload(image, "profile-image");
         member.updateImage(uploadedUrl);
-
         memberRepository.save(member);
         return new MemberResponse(member);
     }
@@ -142,13 +141,11 @@ public class MemberService {
         if (newNickName == null || newNickName.trim().isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_NICKNAME);
         }
-
         if (memberRepository.findByNickName(newNickName).isPresent()) {
             throw new CustomException(ErrorCode.DUPLICATE_NAME);
         }
-
         member.updateNickName(newNickName);
-
+        memberRepository.save(member);
         return new MemberResponse(member);
     }
 
@@ -158,13 +155,11 @@ public class MemberService {
         if (newLoginId == null || newLoginId.trim().isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_LOGINID);
         }
-
         if (memberRepository.findByLoginId(newLoginId).isPresent()) {
             throw new CustomException(ErrorCode.HAS_ID);
         }
-
         member.updateLoginId(newLoginId);
-
+        memberRepository.save(member);
         return new MemberResponse(member);
     }
 
