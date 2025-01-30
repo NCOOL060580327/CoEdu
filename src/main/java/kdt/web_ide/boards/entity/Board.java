@@ -28,15 +28,11 @@ public class Board extends BaseTimeEntity {
     @Column(name = "user_count")
     private int userCount = 1;
 
-    @Column(name = "title_text")
-    private String titleText;
-
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
 
-    public void update(String title,String titleText){
+    public void update(String title){
         this.title = title;
-        this.titleText = titleText;
     }
 
 }

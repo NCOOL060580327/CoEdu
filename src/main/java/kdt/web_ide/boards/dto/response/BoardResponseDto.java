@@ -16,7 +16,6 @@ public class BoardResponseDto {
 
     private LocalDateTime createdDate;
     private LocalDateTime modifedDate;
-    private String titleText;
 
     public BoardResponseDto(Board board){
         this.boardId = board.getId();
@@ -24,6 +23,5 @@ public class BoardResponseDto {
         this.userCount = board.getUserCount();
         this.createdDate = board.getCreatedDate();
         this.modifedDate = board.getModifiedDate();
-        this.titleText = board.getTitleText();
     }
 }

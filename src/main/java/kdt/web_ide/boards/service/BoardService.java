@@ -48,7 +48,8 @@ public class BoardService {
         // 수정 권한 확인 (리더만 수정 가능)
         BoardUser boardUser = boardUserRepository.findByMemberAndBoardAndIsLeaderTrue(member, board)
                 .orElseThrow(() -> new CustomException(ErrorCode.NO_PERMISSION));
-        board.update(requestDto.getTitle(),requestDto.getTitleText());
+        board.update(requestDto.getTitle());
+        boardRepository.save(board);
         return new BoardResponseDto(board);
     }
 
@@ -136,6 +137,5 @@ public class BoardService {
                 .map(boardUser -> new BoardResponseDto(boardUser.getBoard()))
                 .collect(Collectors.toList());
     }
-
 
 }
