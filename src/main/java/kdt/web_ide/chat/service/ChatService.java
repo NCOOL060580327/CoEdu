@@ -13,7 +13,10 @@ import kdt.web_ide.common.exception.ErrorCode;
 import kdt.web_ide.members.entity.Member;
 import kdt.web_ide.members.entity.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,12 +38,14 @@ public class ChatService {
 
     // 메세지 전송
     @Transactional
-    public void sendMessage(Long chatRoomId, Long senderId, String messageText) {
+    public void sendMessage(Long chatRoomId, String messageText) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CHATROOM_NOT_FOUND));
 
-        Member sender = memberRepository.findById(senderId)
+        Member sender = memberRepository.findByLoginId(authentication.getName())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         ChatMessage message = saveMessage(chatRoom, sender, messageText);
@@ -49,9 +54,9 @@ public class ChatService {
             simpMessagingTemplate.convertAndSend("/room/" + chatRoomId, GetChatMessageResponseDto.fromChatMessage(message));
         });
 
-        chatRoomMemberRepository.incrementNotReadCount(chatRoomId, senderId);
+        chatRoomMemberRepository.incrementNotReadCount(chatRoomId, sender.getMemberId());
 
-        notifyUnreadMessageCount(chatRoomId, senderId);
+        notifyUnreadMessageCount(chatRoomId, sender.getMemberId());
     }
 
     @Transactional
