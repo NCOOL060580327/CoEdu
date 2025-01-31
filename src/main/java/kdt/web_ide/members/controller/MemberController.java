@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kdt.web_ide.members.dto.request.JoinRequestDto;
 import kdt.web_ide.members.dto.request.LoginRequestDto;
+import kdt.web_ide.members.dto.request.RefreshTokenRequestDto;
+import kdt.web_ide.members.dto.response.AccessTokenResponseDto;
 import kdt.web_ide.members.dto.response.LoginResponseDto;
 import kdt.web_ide.members.dto.response.MemberResponse;
 import kdt.web_ide.members.service.CustomUserDetails;
@@ -76,5 +78,13 @@ public class MemberController {
     ) {
         MemberResponse updatedMember = memberService.updateLoginId(newLoginId, userDetails.getMember());
         return ResponseEntity.ok(updatedMember);
+    }
+
+    @Operation(summary = "엑세스 토큰 재발급 API")
+    @PostMapping("/refresh")
+    public ResponseEntity<AccessTokenResponseDto> recreateAccessToken(@RequestBody RefreshTokenRequestDto requestDto){
+        String accessToken = memberService.validateRefreshToken(requestDto.getRefreshToken());
+        AccessTokenResponseDto responseDto = new AccessTokenResponseDto(accessToken);
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 }
