@@ -18,10 +18,7 @@ import org.springframework.util.StringUtils;
 
 
 import java.security.Key;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Component
 @Slf4j
@@ -91,24 +88,30 @@ public class JwtProvider {
 
     /**
      * 토큰 재생성
-     * @param username
-     * @param roles
+     * @param role
+     * @param member
+     * @param expireTime
      * @return
      */
-    public String recreateAccessToken(String username, Object roles){
-        Claims claims = Jwts.claims().setSubject(username); // JWT payload 에 저장되는 정보단위
-        claims.put("roles", roles); // 정보는 key / value 쌍으로 저장
+    public String recreateAccessToken(RoleType role, CustomUserInfoDto member, Long expireTime) {
+        Claims claims = Jwts.claims();
+        claims.put("memberId", member.getMemberId());
+        claims.put("loginId", member.getLoginId());
+        claims.put("role", member.getRoles());
+
         Date now = new Date();
 
-        //Access Token
-        String accessToken = Jwts.builder()
-                .setClaims(claims) // 정보 저장
-                .setIssuedAt(now) // 토큰 발행 시간 정보
-                .setExpiration(new Date(now.getTime() + TOKEN_TIME))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
-                .compact();
-        return accessToken;
+        return BEARER_PREFIX +
+                Jwts.builder()
+                        .claim(AUTHORIZATION_KEY, role)
+                        .setSubject(member.getLoginId())
+                        .setClaims(claims)
+                        .setExpiration(new Date(now.getTime() + expireTime))
+                        .setIssuedAt(now)
+                        .signWith(SignatureAlgorithm.HS256, key)
+                        .compact();
     }
+
 
     /**
      * 토큰으로 유저정보 가져오기
@@ -205,30 +208,48 @@ public class JwtProvider {
 
 
     /**
-     * 리프레시 토큰의 유효성,만료일자 확인
+     * 리프레시 토큰의 유효성 및 만료 여부 확인
      * @param refreshTokenObj
-     * @return
+     * @return 새로 생성된 액세스 토큰 (유효하면), 만료 시 예외 발생
      */
-    public String validateRefreshToken(RefreshToken refreshTokenObj){
-
+    public String validateRefreshToken(RefreshToken refreshTokenObj) {
         // refresh 객체에서 refreshToken 추출
         String refreshToken = refreshTokenObj.getRefreshToken();
-
-        try {
-            // 검증
-            Jws<Claims> claims = Jwts.parser().setSigningKey(refreshSecretKey).parseClaimsJws(refreshToken);
-
-            //refresh 토큰의 만료시간이 지나지 않았을 경우, 새로운 access 토큰을 생성
-            if (!claims.getBody().getExpiration().before(new Date())) {
-                return recreateAccessToken(claims.getBody().get("sub").toString(), claims.getBody().get("roles"));
-            }
-        }catch (Exception e) {
-            //refresh 토큰이 만료되었을 경우, 로그인이 필요.
-            return null;
-
+        if (refreshToken.startsWith("Bearer ")) {
+            refreshToken = refreshToken.substring(7);
         }
 
-        return null;
+        try {
+            Jws<Claims> claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(refreshToken);
+
+            Date expiration = claims.getBody().getExpiration();
+            Date now = new Date();
+
+            // 만료 여부 확인
+            if (expiration.before(now)) {
+                return null;
+            }
+
+            // 로그인 ID, 역할 정보 추출
+            Long memberId = claims.getBody().get("memberId", Long.class);
+            String loginId = claims.getBody().get("loginId", String.class);
+            List<RoleType> roles = claims.getBody().get("role", List.class);
+
+            if (memberId == null || loginId == null || roles == null) {
+                return null;
+            }
+            CustomUserInfoDto userInfo = new CustomUserInfoDto(memberId, loginId, roles);
+            return recreateAccessToken(RoleType.USER, userInfo, TOKEN_TIME);
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT Expired: {}", e.getMessage());
+            return null;
+        } catch (JwtException e) {
+            log.error("Invalid Token: {}", e.getMessage());
+            return null;
+        }
     }
 
 
