@@ -15,8 +15,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-
-
 import java.security.Key;
 import java.util.*;
 
@@ -75,16 +73,16 @@ public class JwtProvider {
         claims.put("role", member.getRoles());
 
         Date now = new Date();
-        return BEARER_PREFIX +
-                Jwts.builder()
-                        .claim(AUTHORIZATION_KEY,role)
-                        .setSubject(member.getLoginId())
-                        .setClaims(claims)
-                        .setExpiration(new Date(now.getTime() + expireTime))
-                        .setIssuedAt(now)
-                        .signWith(SignatureAlgorithm.HS256,key)
-                        .compact();
+        return Jwts.builder()
+                .claim(AUTHORIZATION_KEY,role)
+                .setSubject(member.getLoginId())
+                .setClaims(claims)
+                .setExpiration(new Date(now.getTime() + expireTime))
+                .setIssuedAt(now)
+                .signWith(SignatureAlgorithm.HS256,key)
+                .compact();
     }
+
 
     /**
      * 토큰 재생성
@@ -101,17 +99,15 @@ public class JwtProvider {
 
         Date now = new Date();
 
-        return BEARER_PREFIX +
-                Jwts.builder()
-                        .claim(AUTHORIZATION_KEY, role)
-                        .setSubject(member.getLoginId())
-                        .setClaims(claims)
-                        .setExpiration(new Date(now.getTime() + expireTime))
-                        .setIssuedAt(now)
-                        .signWith(SignatureAlgorithm.HS256, key)
-                        .compact();
+        return Jwts.builder()
+                .claim(AUTHORIZATION_KEY, role)
+                .setSubject(member.getLoginId())
+                .setClaims(claims)
+                .setExpiration(new Date(now.getTime() + expireTime))
+                .setIssuedAt(now)
+                .signWith(SignatureAlgorithm.HS256, key)
+                .compact();
     }
-
 
     /**
      * 토큰으로 유저정보 가져오기
@@ -209,7 +205,7 @@ public class JwtProvider {
 
     /**
      * 리프레시 토큰의 유효성 및 만료 여부 확인
-     * @param refreshTokenObj
+     * @param refreshTokenObj 리프레시 토큰 객체
      * @return 새로 생성된 액세스 토큰 (유효하면), 만료 시 예외 발생
      */
     public String validateRefreshToken(RefreshToken refreshTokenObj) {
@@ -230,6 +226,7 @@ public class JwtProvider {
 
             // 만료 여부 확인
             if (expiration.before(now)) {
+                log.warn("리프레시 토큰이 만료되었습니다.");
                 return null;
             }
 
@@ -239,6 +236,7 @@ public class JwtProvider {
             List<RoleType> roles = claims.getBody().get("role", List.class);
 
             if (memberId == null || loginId == null || roles == null) {
+                log.error("JWT에서 memberId, loginId 또는 roles 값을 찾을 수 없습니다!");
                 return null;
             }
             CustomUserInfoDto userInfo = new CustomUserInfoDto(memberId, loginId, roles);
@@ -251,7 +249,6 @@ public class JwtProvider {
             return null;
         }
     }
-
 
 
 }
