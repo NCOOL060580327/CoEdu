@@ -74,16 +74,9 @@ public class BoardService {
         // 존재하는 게시판인지 확인
         Board thisBoard = boardRepository.findById(boardId)
                 .orElseThrow(()-> new CustomException(ErrorCode.BOARD_NOT_FOUND));
-        // 초대 권한이 있는지 확인
-        BoardUser leader = boardUserRepository.findByMemberAndBoardAndIsLeaderTrue(currentMember,thisBoard)
-                .orElseThrow(()-> new CustomException(ErrorCode.NO_PERMISSION));
         // 존재하는 멤버인지 확인
         Member member = memberRepository.findByLoginId(requestDto.getLoginId())
                 .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
-        // 멤버인지 확인
-        if(boardUserRepository.existsByMember(member)){
-            throw new CustomException(ErrorCode.MEMBER_ALREADY_IN_BOARD);
-        }
         BoardUser newUser = requestDto.toEntity(thisBoard,member);
         boardUserRepository.save(newUser);
         return new BoardUserResponseDto(newUser);
