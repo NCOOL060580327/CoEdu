@@ -13,7 +13,6 @@ import kdt.web_ide.common.exception.ErrorCode;
 import kdt.web_ide.members.entity.Member;
 import kdt.web_ide.members.entity.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,7 +44,7 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CHATROOM_NOT_FOUND));
 
-        Member sender = memberRepository.findByLoginId(authentication.getName())
+        Member sender = memberRepository.findByNickName(authentication.getName())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         ChatMessage message = saveMessage(chatRoom, sender, messageText);
@@ -103,5 +102,4 @@ public class ChatService {
             }
         }
     }
-
 }
