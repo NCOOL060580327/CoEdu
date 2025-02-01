@@ -13,6 +13,7 @@ import java.util.List;
 public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, Long> {
 
     List<ChatRoomMember> findAllByChatRoom_ChatRoomId(Long chatRoomId);
+    void deleteAllByChatRoom_ChatRoomId(Long chatRoomId);
 
     @Modifying
     @Query("""
@@ -31,5 +32,7 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
            AND crm.member.memberId = :memberId
     """)
     void resetNotReadCount(@Param("chatRoomId") Long chatRoomId, @Param("memberId") Long memberId);
+
+
 
 }

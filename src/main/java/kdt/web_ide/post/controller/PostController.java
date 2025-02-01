@@ -90,6 +90,13 @@ public class PostController {
         return ResponseEntity.ok("Post updated successfully.");
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "게시글 삭제", description = "특정 게시글을 삭제합니다.")
+    public ResponseEntity<String> deletePost(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        postService.deletePost(id);
+        return ResponseEntity.ok("Post deleted successfully.");
+    }
+
     @GetMapping("/{id}/content")
     @Operation(summary = "게시글 파일 내용 조회", description = "특정 게시글의 파일 내용을 조회합니다.")
     public ResponseEntity<String> getFileContent(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -101,6 +108,7 @@ public class PostController {
     @MessageMapping("/posts/edit/{id}")
     public void editPostContent(@DestinationVariable("id") Long id, @Payload String newContent) {
         postService.parsingAndModifyPostContent(id, newContent);
+        //postService.modifyFileContent(id, newContent);
         simpMessagingTemplate.convertAndSend("/ide/edit/" + id, newContent);
     }
 

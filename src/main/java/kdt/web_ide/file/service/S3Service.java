@@ -221,7 +221,23 @@ public class S3Service {
         return filePath.substring(filePath.lastIndexOf(".") + 1).toLowerCase();
     }
 
+    public void deleteFile(String filePath) {
+        try {
+            amazonS3.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(filePath)
+                    .build());
+            log.info("Deleted file from S3: {}", filePath);
+        } catch (NoSuchKeyException e) {
+            log.warn("File not found in S3 for deletion: {}", filePath);
+        } catch (S3Exception e) {
+            log.error("Error deleting file from S3. FilePath: {}", filePath, e);
+            throw new CustomException(ErrorCode.S3_DELETE_ERROR, "Error deleting file from S3: " + e.awsErrorDetails().errorMessage());
+        }
+    }
+
     private String extractFileName(String filePath) {
         return filePath.substring(filePath.lastIndexOf("/") + 1);
     }
 }
+

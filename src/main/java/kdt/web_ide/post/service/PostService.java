@@ -46,20 +46,18 @@ public class PostService {
     private final ObjectMapper objectMapper;
 
     public PostResponseDto createPost(PostRequestDto requestDto) {
-        // 게시판 조회
         Board board = boardRepository.findById(requestDto.getBoardId())
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
 
-        // 파일 제목 생성 및 빈 파일 업로드
         String fileName = generateFileName(requestDto.getName(), String.valueOf(requestDto.getLanguage()));
         String filePath = uploadEmptyFileToS3(fileName, board.getId());
 
-        // 게시글 생성
         Post post = Post.builder()
                 .board(board)
                 .name(requestDto.getName())
                 .language(requestDto.getLanguage())
                 .filePath(filePath)
+                .createdAt(LocalDateTime.now())
                 .build();
 
         Post savedPost = postRepository.save(post);
@@ -76,6 +74,7 @@ public class PostService {
                 .map(member -> ChatRoomMember.builder()
                         .chatRoom(chatRoom)
                         .member(member)
+                        .notReadCount(0)
                         .build())
                 .toList();
 
@@ -160,6 +159,7 @@ public class PostService {
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
         s3Service.modifyFileContent(post.getFilePath(), newContent);
     }
+
     public void modifyPostNameAndLanguage(Long postId, String name, Language language) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
@@ -194,5 +194,21 @@ public class PostService {
         }
     }
 
+    public void deletePost(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+
+        // 2. 해당 게시글과 연결된 채팅방 조회 및 삭제
+        chatRoomRepository.findChatRoomByPost_Id(postId)
+                .ifPresent(chatRoom -> {
+                    chatRoomMemberRepository.deleteAllByChatRoom_ChatRoomId(chatRoom.getChatRoomId());
+                    chatRoomRepository.delete(chatRoom);
+                });
+
+        s3Service.deleteFile(post.getFilePath());
+
+        postRepository.delete(post);
+
+    }
 
 }

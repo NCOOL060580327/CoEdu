@@ -39,6 +39,7 @@ public enum ErrorCode {
     FILE_EXTENSION_ERROR(HttpStatus.BAD_REQUEST, "S3-003", "파일 확장자가 올바르지 않습니다."),
     S3_FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "S3-004", "S3 파일을 찾을 수 없습니다."),
     S3_ACCESS_ERROR(HttpStatus.BAD_REQUEST, "S3-005", "S3 접근 권한이 없습니다."),
+    S3_DELETE_ERROR(HttpStatus.BAD_REQUEST, "S3-006", "S3 삭제 실패"),
 
     // 게시글
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "POST-001", "게시글을 찾을 수 없습니다."),
