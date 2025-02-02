@@ -118,4 +118,14 @@ public class PostController {
         return postService.executeFile(id, input);
     }
 
+    @GetMapping("/{boardId}")
+    @Operation(summary = "특정 게시판의 게시글 조회", description = "특정 게시판에 속한 모든 게시글을 조회합니다.")
+    public ResponseEntity<List<PostResponseDto>> getPostsByBoardId(
+            @PathVariable Long boardId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        List<PostResponseDto> response = postService.getPostsByBoardId(boardId);
+        return ResponseEntity.ok(response);
+    }
+
+
 }
