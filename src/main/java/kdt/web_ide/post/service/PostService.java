@@ -213,4 +213,19 @@ public class PostService {
 
     }
 
+    public List<PostResponseDto> getPostsByBoardId(Long boardId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+
+        List<Post> posts = postRepository.findByBoardId(boardId);
+
+        return posts.stream()
+                .map(post -> {
+                    ChatRoom chatRoom = chatRoomRepository.findChatRoomByPost_Id(Long.valueOf(post.getId()))
+                            .orElseThrow(() -> new CustomException(ErrorCode.CHATROOM_NOT_FOUND));
+                    return mapToResponseDto(post, chatRoom.getChatRoomId().intValue());
+                })
+                .collect(Collectors.toList());
+    }
+
 }
