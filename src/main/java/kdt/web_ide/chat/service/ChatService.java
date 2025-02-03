@@ -1,5 +1,6 @@
 package kdt.web_ide.chat.service;
 
+import kdt.web_ide.chat.dto.request.ChatMessageRequestDto;
 import kdt.web_ide.chat.dto.response.GetChatMessageResponseDto;
 import kdt.web_ide.chat.dto.response.UnreadMessageCountResponseDto;
 import kdt.web_ide.chat.entity.ChatMessage;
@@ -37,17 +38,15 @@ public class ChatService {
 
     // 메세지 전송
     @Transactional
-    public void sendMessage(Long chatRoomId, String messageText) {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public void sendMessage(Long chatRoomId, ChatMessageRequestDto requestDto) {
 
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CHATROOM_NOT_FOUND));
 
-        Member sender = memberRepository.findByNickName(authentication.getName())
+        Member sender = memberRepository.findById(requestDto.senderId())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        ChatMessage message = saveMessage(chatRoom, sender, messageText);
+        ChatMessage message = saveMessage(chatRoom, sender, requestDto.content());
 
         CompletableFuture.runAsync(() -> {
             simpMessagingTemplate.convertAndSend("/room/" + chatRoomId, GetChatMessageResponseDto.fromChatMessage(message));

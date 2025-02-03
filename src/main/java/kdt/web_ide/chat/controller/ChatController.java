@@ -27,7 +27,7 @@ public class ChatController {
     // 메세지 전송 및 저장
     @MessageMapping("/chat/{roomId}")
     public ResponseEntity<Void> sendMessage(@DestinationVariable("roomId") Long roomId, @Payload ChatMessageRequestDto requestDto) {
-        chatService.sendMessage(roomId, requestDto.content());
+        chatService.sendMessage(roomId, requestDto);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 

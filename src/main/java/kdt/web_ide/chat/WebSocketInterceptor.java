@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import jakarta.annotation.PostConstruct;
 import kdt.web_ide.members.service.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
@@ -15,14 +16,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class WebSocketInterceptor implements ChannelInterceptor {
 
     private final JwtProvider jwtProvider;
 
-    @PostConstruct
-    public void init() {
-        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
-    }
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -42,8 +40,6 @@ public class WebSocketInterceptor implements ChannelInterceptor {
                 String loginId = claims.get("loginId", String.class);
 
                 Authentication authentication = jwtProvider.createUserAuthentication(loginId);
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
 
                 accessor.setUser(authentication);
 
