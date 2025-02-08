@@ -9,12 +9,11 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class PostResponseDto {
-    private Integer id;
-    private Integer boardId;
-    private String name;
-    private Language language;
-    private String filePath;
-    private String createdAt;
-    private Integer roomId;
+  private Integer id;
+  private Integer boardId;
+  private String name;
+  private Language language;
+  private String filePath;
+  private String createdAt;
+  private Integer roomId;
 }
-

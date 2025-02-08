@@ -9,13 +9,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class BoardUserInviteRequestDto {
-    private String loginId;
+  private String loginId;
 
-    public BoardUser toEntity(Board board, Member member) {
-        return BoardUser.builder()
-                .board(board)
-                .isLeader(false)
-                .member(member)
-                .build();
-    }
+  public BoardUser toEntity(Board board, Member member) {
+    return BoardUser.builder().board(board).isLeader(false).member(member).build();
+  }
 }

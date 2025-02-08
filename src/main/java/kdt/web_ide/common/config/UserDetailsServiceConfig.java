@@ -8,10 +8,11 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @Configuration
 public class UserDetailsServiceConfig {
-    @Bean
-    public UserDetailsService userDetailsService() {
-        InMemoryUserDetailsManager userDetailsManager = new InMemoryUserDetailsManager();
-        userDetailsManager.createUser(User.withUsername("user").password("{noop}password").roles("USER").build());
-        return userDetailsManager;
-    }
+  @Bean
+  public UserDetailsService userDetailsService() {
+    InMemoryUserDetailsManager userDetailsManager = new InMemoryUserDetailsManager();
+    userDetailsManager.createUser(
+        User.withUsername("user").password("{noop}password").roles("USER").build());
+    return userDetailsManager;
+  }
 }

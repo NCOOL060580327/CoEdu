@@ -4,15 +4,14 @@ import lombok.Getter;
 
 @Getter
 public enum Language {
-    JAVA("java"),
-    CPP("cpp"),
-    PYTHON("python"),
-    JAVASCRIPT("javascript");
+  JAVA("java"),
+  CPP("cpp"),
+  PYTHON("python"),
+  JAVASCRIPT("javascript");
 
-    private final String language;
+  private final String language;
 
-    Language(String language) {
-        this.language = language;
-    }
-
+  Language(String language) {
+    this.language = language;
+  }
 }

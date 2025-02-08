@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class PostRequestDto {
-    private Long boardId; // 게시판 ID
-    private String name; // 게시글 이름
-    private Language language; // 언어 종류
+  private Long boardId; // 게시판 ID
+  private String name; // 게시글 이름
+  private Language language; // 언어 종류
 }
