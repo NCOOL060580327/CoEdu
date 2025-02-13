@@ -11,10 +11,13 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
-import io.jsonwebtoken.Claims;
+import kdt.web_ide.common.exception.CustomException;
+import kdt.web_ide.common.exception.ErrorCode;
+import kdt.web_ide.members.service.CustomUserDetailService;
 import kdt.web_ide.members.service.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,24 +28,31 @@ import lombok.extern.slf4j.Slf4j;
 public class JwtAuthFilter extends GenericFilterBean {
 
   private final JwtProvider jwtProvider;
+  private final CustomUserDetailService customUserDetailService;
 
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
       throws IOException, ServletException {
+
     HttpServletRequest httpRequest = (HttpServletRequest) request;
     HttpServletResponse httpResponse = (HttpServletResponse) response;
 
     // 헤더에서 JWT 토큰을 가져옴
     String token = jwtProvider.resolveToken(httpRequest);
 
-    if (token != null && jwtProvider.validateToken(token)) {
-      // JWT 토큰에서 loginId 추철
-      Claims claims = jwtProvider.getUserInfoFromToken(token);
-      String loginId = claims.get("loginId", String.class);
+    if (token != null) {
+      if (jwtProvider.validateToken(token)) {
+        Long memberId = Long.parseLong(jwtProvider.getUserInfoFromToken(token).getSubject());
+        UserDetails userDetails = customUserDetailService.loadUserByUsername(memberId.toString());
 
-      if (loginId != null) {
-        Authentication authentication = jwtProvider.createUserAuthentication(loginId);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (userDetails != null) {
+          Authentication authentication = jwtProvider.createUserAuthentication(memberId.toString());
+          SecurityContextHolder.getContext().setAuthentication(authentication);
+        } else {
+          throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+      } else {
+        throw new CustomException(ErrorCode.INVALID_TOKEN);
       }
     }
     // 필터 체인을 계속 진행

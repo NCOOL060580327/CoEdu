@@ -18,3 +18,10 @@ cloud:
     region: ${AWS_REGION}
     s3:
       bucket: ${AWS_S3_BUCKET}
+oauth:
+  kakao:
+    client-id: ${KAKAO_CLIENT_ID}
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    url:
+      auth: https://kauth.kakao.com
+      api: https://kapi.kakao.com

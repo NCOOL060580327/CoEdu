@@ -14,9 +14,8 @@ import org.springframework.util.StringUtils;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import kdt.web_ide.members.dto.request.CustomUserInfoDto;
-import kdt.web_ide.members.dto.response.TokenResponse;
-import kdt.web_ide.members.entity.RefreshToken;
+import kdt.web_ide.common.exception.CustomException;
+import kdt.web_ide.common.exception.ErrorCode;
 import kdt.web_ide.members.entity.RoleType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,22 +60,19 @@ public class JwtProvider {
   }
 
   /**
-   * 엑세스 토큰 생성
+   * 토큰 생성
    *
-   * @param member
    * @param expireTime
    * @return
    */
-  public String createToken(RoleType role, CustomUserInfoDto member, Long expireTime) {
+  private String createToken(RoleType role, Long memberId, Long expireTime) {
     Claims claims = Jwts.claims();
-    claims.put("memberId", member.getMemberId());
-    claims.put("loginId", member.getLoginId());
-    claims.put("role", member.getRoles());
+    claims.put("memberId", memberId);
+    claims.put("role", RoleType.USER);
 
     Date now = new Date();
     return Jwts.builder()
         .claim(AUTHORIZATION_KEY, role)
-        .setSubject(member.getLoginId())
         .setClaims(claims)
         .setExpiration(new Date(now.getTime() + expireTime))
         .setIssuedAt(now)
@@ -85,29 +81,23 @@ public class JwtProvider {
   }
 
   /**
-   * 토큰 재생성
+   * 액세스 토큰 생성
    *
-   * @param role
-   * @param member
-   * @param expireTime
+   * @param memberId
    * @return
    */
-  public String recreateAccessToken(RoleType role, CustomUserInfoDto member, Long expireTime) {
-    Claims claims = Jwts.claims();
-    claims.put("memberId", member.getMemberId());
-    claims.put("loginId", member.getLoginId());
-    claims.put("role", member.getRoles());
+  public String generateAccessToken(Long memberId) {
+    return createToken(RoleType.USER, memberId, TOKEN_TIME);
+  }
 
-    Date now = new Date();
-
-    return Jwts.builder()
-        .claim(AUTHORIZATION_KEY, role)
-        .setSubject(member.getLoginId())
-        .setClaims(claims)
-        .setExpiration(new Date(now.getTime() + expireTime))
-        .setIssuedAt(now)
-        .signWith(SignatureAlgorithm.HS256, key)
-        .compact();
+  /**
+   * 리프레시 토큰 생성
+   *
+   * @param memberId
+   * @return
+   */
+  public String generateRefreshToken(Long memberId) {
+    return createToken(RoleType.USER, memberId, REFRESH_TOKEN_TIME);
   }
 
   /**
@@ -146,113 +136,19 @@ public class JwtProvider {
   /**
    * 유저 정보 저장
    *
-   * @param loginId
+   * @param memberId
    * @return
    */
-  public UsernamePasswordAuthenticationToken createUserAuthentication(String loginId) {
-    UserDetails userDetails = customUserDetailsService.loadUserByUsername(loginId);
+  public UsernamePasswordAuthenticationToken createUserAuthentication(String memberId) {
+    UserDetails userDetails = customUserDetailsService.loadUserByUsername(memberId);
     return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
   }
 
-  /**
-   * 로그인 시 토큰 생성
-   *
-   * @param member
-   * @return
-   */
-  public TokenResponse createTokenByLogin(CustomUserInfoDto member) {
-    String accessToken = createToken(RoleType.USER, member, TOKEN_TIME);
-    String refreshToken = createToken(RoleType.USER, member, REFRESH_TOKEN_TIME);
-    return new TokenResponse(accessToken, refreshToken, member.getLoginId());
-  }
-
-  /**
-   * 토큰 무효화 (블랙리스트에 추가)
-   *
-   * @param token
-   */
-  public void invalidateToken(String token, String loginId) {
+  public Long parseRefreshToken(String token) {
     if (validateToken(token)) {
-      blacklistedTokens.add(token);
-      log.info("Token invalidated: {}", token);
-    } else {
-      log.warn("Invalid token: {}", token);
+      Claims claims = getUserInfoFromToken(token);
+      return Long.parseLong(claims.getSubject());
     }
-  }
-
-  /**
-   * 토큰이 블랙리스트에 있는지 확인
-   *
-   * @param token
-   * @return
-   */
-  public boolean isTokenBlacklisted(String token) {
-    return blacklistedTokens.contains(token);
-  }
-
-  /**
-   * 토큰 만료시간 조회
-   *
-   * @param accessToken
-   * @return
-   */
-  public Long getExpiration(String accessToken) {
-    // 엑세스 토큰 만료시간
-    Date expiration =
-        Jwts.parserBuilder()
-            .setSigningKey(key)
-            .build()
-            .parseClaimsJws(accessToken)
-            .getBody()
-            .getExpiration();
-    // 현재시간
-    long now = new Date().getTime();
-    return (expiration.getTime() - now);
-  }
-
-  /**
-   * 리프레시 토큰의 유효성 및 만료 여부 확인
-   *
-   * @param refreshTokenObj 리프레시 토큰 객체
-   * @return 새로 생성된 액세스 토큰 (유효하면), 만료 시 예외 발생
-   */
-  public String validateRefreshToken(RefreshToken refreshTokenObj) {
-    // refresh 객체에서 refreshToken 추출
-    String refreshToken = refreshTokenObj.getRefreshToken();
-    if (refreshToken.startsWith("Bearer ")) {
-      refreshToken = refreshToken.substring(7);
-    }
-
-    try {
-      Jws<Claims> claims =
-          Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(refreshToken);
-
-      Date expiration = claims.getBody().getExpiration();
-      Date now = new Date();
-
-      // 만료 여부 확인
-      if (expiration.before(now)) {
-        log.warn("리프레시 토큰이 만료되었습니다.");
-        return null;
-      }
-
-      // 로그인 ID, 역할 정보 추출
-      Long memberId = claims.getBody().get("memberId", Long.class);
-      String loginId = claims.getBody().get("loginId", String.class);
-      List<RoleType> roles = claims.getBody().get("role", List.class);
-
-      if (memberId == null || loginId == null || roles == null) {
-        log.error("JWT에서 memberId, loginId 또는 roles 값을 찾을 수 없습니다!");
-        return null;
-      }
-      CustomUserInfoDto userInfo = new CustomUserInfoDto(memberId, loginId, roles);
-      return recreateAccessToken(RoleType.USER, userInfo, TOKEN_TIME);
-    } catch (ExpiredJwtException e) {
-      log.warn("JWT Expired: {}", e.getMessage());
-      return null;
-    } catch (JwtException e) {
-      log.error("Invalid Token: {}", e.getMessage());
-      return null;
-    }
+    throw new CustomException(ErrorCode.USER_NOT_FOUND);
   }
 }

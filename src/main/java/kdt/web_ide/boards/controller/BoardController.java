@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kdt.web_ide.boards.dto.request.BoardSaveRequesetDto;
 import kdt.web_ide.boards.dto.request.BoardUpdateRequestDto;
-import kdt.web_ide.boards.dto.request.BoardUserInviteRequestDto;
 import kdt.web_ide.boards.dto.response.BoardResponseDto;
 import kdt.web_ide.boards.dto.response.BoardUserResponseDto;
 import kdt.web_ide.boards.service.BoardService;
@@ -58,17 +57,17 @@ public class BoardController {
     return ResponseEntity.status(HttpStatus.OK).body("게시판이 삭제되었습니다.");
   }
 
-  // 게시판 인원 초대
-  @Operation(summary = "게시판 멤버 초대 API", description = "이메일로 멤버를 초대합니다. 리더만 초대 가능합니다.")
-  @PostMapping("/{boardId}/invite")
-  public ResponseEntity<BoardUserResponseDto> inviteMember(
-      @PathVariable Long boardId,
-      @RequestBody @Valid BoardUserInviteRequestDto requestDto,
-      @AuthenticationPrincipal CustomUserDetails userDetails) {
-    BoardUserResponseDto invitedUser =
-        boardService.inviteMember(requestDto, boardId, userDetails.getMember());
-    return ResponseEntity.ok(invitedUser);
-  }
+  //  // 게시판 인원 초대
+  //  @Operation(summary = "게시판 멤버 초대 API", description = "이메일로 멤버를 초대합니다. 리더만 초대 가능합니다.")
+  //  @PostMapping("/{boardId}/invite")
+  //  public ResponseEntity<BoardUserResponseDto> inviteMember(
+  //      @PathVariable Long boardId,
+  //      @RequestBody @Valid BoardUserInviteRequestDto requestDto,
+  //      @AuthenticationPrincipal CustomUserDetails userDetails) {
+  //    BoardUserResponseDto invitedUser =
+  //        boardService.inviteMember(requestDto, boardId, userDetails.getMember());
+  //    return ResponseEntity.ok(invitedUser);
+  //  }
 
   // 게시판 인원 조회
   @Operation(summary = "게시판 인원 조회 API", description = "해당 게시판의 모든 멤버를 조회합니다.")

@@ -5,8 +5,6 @@ import java.util.List;
 
 import jakarta.persistence.*;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 import kdt.web_ide.BaseTimeEntity;
 import lombok.*;
 
@@ -21,35 +19,26 @@ public class Member extends BaseTimeEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long memberId;
 
+  @Column(name = "kakao_id")
+  private Long kakaoId;
+
+  @Setter
   @Column(nullable = false, unique = true)
   private String nickName;
 
-  @Column(nullable = false, unique = true)
-  private String loginId;
-
-  private String password;
-
+  @Setter
   @Column(name = "profile_img")
   private String profileImage;
 
-  public void encodePassword(PasswordEncoder passwordEncoder) {
-    this.password = passwordEncoder.encode(password);
-  }
+  @Setter
+  @Column(name = "refresh_token")
+  private String refreshToken;
+
+  @Column(name = "identification_code")
+  private String identificationCode;
 
   @ElementCollection(fetch = FetchType.EAGER)
   @CollectionTable(name = "member_roles", joinColumns = @JoinColumn(name = "member_id"))
   @Enumerated(EnumType.STRING)
   private List<RoleType> roles = new ArrayList<>();
-
-  public void updateImage(String profileImage) {
-    this.profileImage = profileImage;
-  }
-
-  public void updateNickName(String nickName) {
-    this.nickName = nickName;
-  }
-
-  public void updateLoginId(String loginId) {
-    this.loginId = loginId;
-  }
 }

@@ -9,14 +9,12 @@ import lombok.NoArgsConstructor;
 public class MemberResponse {
   public MemberResponse(Member member) {
     this.memberId = member.getMemberId();
-    this.loginId = member.getLoginId();
     this.nickName = member.getNickName();
     this.profileImage = member.getProfileImage();
   }
 
   private final Long memberId;
 
-  private final String loginId;
   private final String nickName;
 
   private final String profileImage;

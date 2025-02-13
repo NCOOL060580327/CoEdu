@@ -3,124 +3,100 @@ package kdt.web_ide.members.service;
 import java.io.IOException;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import kdt.web_ide.common.exception.CustomException;
 import kdt.web_ide.common.exception.ErrorCode;
-import kdt.web_ide.members.dto.request.CustomUserInfoDto;
-import kdt.web_ide.members.dto.request.JoinRequestDto;
-import kdt.web_ide.members.dto.request.LoginRequestDto;
 import kdt.web_ide.members.dto.response.LoginResponseDto;
 import kdt.web_ide.members.dto.response.MemberResponse;
 import kdt.web_ide.members.dto.response.TokenResponse;
 import kdt.web_ide.members.entity.Member;
-import kdt.web_ide.members.entity.RefreshToken;
-import kdt.web_ide.members.entity.RoleType;
 import kdt.web_ide.members.entity.repository.MemberRepository;
-import kdt.web_ide.members.entity.repository.RefreshTokenRepository;
+import kdt.web_ide.members.kakao.KakaoReissueParams;
+import kdt.web_ide.members.oAuth.OAuthInfoResponse;
+import kdt.web_ide.members.oAuth.OAuthLoginParams;
+import kdt.web_ide.members.oAuth.RequestOAuthInfoService;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MemberService {
 
   private final MemberRepository memberRepository;
-  private final PasswordEncoder passwordEncoder;
+  private final RequestOAuthInfoService requestOAuthInfoService;
   private final JwtProvider jwtProvider;
-
-  private final RefreshTokenRepository refreshTokenRepository;
 
   private final S3Uploader s3Uploader;
 
-  @Transactional
-  public void saveRefreshToken(TokenResponse tokenDto) {
-    RefreshToken refreshToken =
-        RefreshToken.builder()
-            .keyUserId(tokenDto.getKey())
-            .refreshToken(tokenDto.getRefreshToken())
-            .build();
-    String userId = refreshToken.getKeyUserId();
+  public LoginResponseDto login(OAuthLoginParams params) {
+    OAuthInfoResponse oAuthInfoResponse = requestOAuthInfoService.request(params);
 
-    if (refreshTokenRepository.existsByKeyUserId(userId)) {
-      refreshTokenRepository.deleteByKeyUserId(userId);
-    }
-    refreshTokenRepository.save(refreshToken);
+    Long memberId = findOrCreateMember(oAuthInfoResponse);
+
+    String accessToken = jwtProvider.generateAccessToken(memberId);
+    String refreshToken = jwtProvider.generateRefreshToken(memberId);
+
+    Member member = findMember(memberId);
+    member.setRefreshToken(refreshToken);
+    memberRepository.save(member);
+
+    return LoginResponseDto.builder()
+        .member(member)
+        .tokenResponse(new TokenResponse(accessToken, refreshToken))
+        .build();
   }
 
-  public RefreshToken getRefreshToken(String refreshToken) {
-    return refreshTokenRepository
-        .findByRefreshToken(refreshToken)
-        .orElseThrow(() -> new CustomException(ErrorCode.INVALID_TOKEN));
+  public Long findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
+    return memberRepository
+        .findByKakaoId(oAuthInfoResponse.getKakaoId())
+        .map(Member::getMemberId)
+        .orElseGet(() -> newUser(oAuthInfoResponse));
   }
 
-  public String validateRefreshToken(String refreshToken) {
-    RefreshToken getRefreshToken = getRefreshToken(refreshToken);
-    String createdAccessToken = jwtProvider.validateRefreshToken(getRefreshToken);
-
-    if (createdAccessToken == null) {
-      throw new CustomException(ErrorCode.TOKEN_EXPIRED);
-    }
-
-    return createdAccessToken;
+  private Long newUser(OAuthInfoResponse oAuthInfoResponse) {
+    return memberRepository
+        .save(
+            Member.builder()
+                .kakaoId(oAuthInfoResponse.getKakaoId())
+                .nickName(oAuthInfoResponse.getKakaoNickname())
+                .identificationCode(
+                    oAuthInfoResponse.getKakaoNickname()
+                        + oAuthInfoResponse.getKakaoId().toString())
+                .profileImage(oAuthInfoResponse.getKakaoProfileImage())
+                .build())
+        .getMemberId();
   }
 
-  // 회원가입
-  public MemberResponse signUp(@Valid JoinRequestDto joinRequest) throws CustomException {
-    String loginId = joinRequest.getLoginId();
-    String nickName = joinRequest.getNickName();
-    String password = passwordEncoder.encode(joinRequest.getPassword());
+  public TokenResponse reissue(KakaoReissueParams params) {
 
-    // 닉네임 중복 확인
-    if (memberRepository.findByNickName(nickName).isPresent()) {
-      throw new CustomException(ErrorCode.DUPLICATE_NAME);
-    }
+    String refreshToken = params.getRefreshToken();
 
-    // 아이디 중복 확인
-    if (memberRepository.findByLoginId(loginId).isPresent()) {
-      throw new CustomException(ErrorCode.HAS_ID);
-    }
-
-    // 비밀번호 일치 확인
-    if (password.equals(joinRequest.getPassword2())) {
-      throw new CustomException(ErrorCode.PASSWORD_NOT_MATCHED);
-    }
-
-    RoleType role = RoleType.USER;
-    Member member = joinRequest.toEntity(role, password);
-
-    // 기본 프로필 이미지 설정
-    final String DEFAULT_PROFILE_IMAGE_URL =
-        "https://ide-project-bucket.s3.ap-northeast-2.amazonaws.com/profile-image/4510b03e-aded-43f1-b063-ccda7c734681_79516d5a-bdb1-4fbd-918e-6c56a38705c75070529700289430514_코에듀_기본_프로필.png";
-    member.updateImage(DEFAULT_PROFILE_IMAGE_URL);
-
-    memberRepository.save(member); // 회원 정보 저장
-    return new MemberResponse(member);
-  }
-
-  // 로그인
-  @Transactional
-  public LoginResponseDto login(LoginRequestDto loginRequest) throws CustomException {
-    String loginId = loginRequest.getLoginId();
-    String password = loginRequest.getPassword();
+    Long memberId = jwtProvider.parseRefreshToken(refreshToken);
 
     Member member =
         memberRepository
-            .findByLoginId(loginId)
-            .orElseThrow(() -> new CustomException(ErrorCode.INVALID_LOGINID));
+            .findById(memberId)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-    if (!passwordEncoder.matches(password, member.getPassword())) {
-      throw new CustomException(ErrorCode.INVALID_PASSWORD);
+    if (!refreshToken.equals(member.getRefreshToken())) {
+      throw new CustomException(ErrorCode.INVALID_TOKEN);
     }
 
-    CustomUserInfoDto userInfoDto =
-        new CustomUserInfoDto(member.getMemberId(), member.getLoginId(), member.getRoles());
-    TokenResponse tokenDto = jwtProvider.createTokenByLogin(userInfoDto);
-    saveRefreshToken(tokenDto);
-    return new LoginResponseDto(member, tokenDto);
+    String newAccessToken = jwtProvider.generateAccessToken(member.getMemberId());
+    String newRefreshToken = jwtProvider.generateRefreshToken(member.getMemberId());
+
+    member.setRefreshToken(newRefreshToken);
+
+    return new TokenResponse(newAccessToken, newRefreshToken);
+  }
+
+  public Member findMember(Long memberId) {
+    return memberRepository
+        .findById(memberId)
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
   }
 
   // 멤버 정보 반환
@@ -137,7 +113,7 @@ public class MemberService {
       throw new CustomException(ErrorCode.INVALID_IMAGE);
     }
     String uploadedUrl = s3Uploader.upload(image, "profile-image");
-    member.updateImage(uploadedUrl);
+    member.setProfileImage(uploadedUrl);
     memberRepository.save(member);
     return new MemberResponse(member);
   }
@@ -151,21 +127,7 @@ public class MemberService {
     if (memberRepository.findByNickName(newNickName).isPresent()) {
       throw new CustomException(ErrorCode.DUPLICATE_NAME);
     }
-    member.updateNickName(newNickName);
-    memberRepository.save(member);
-    return new MemberResponse(member);
-  }
-
-  // 로그인 아이디 수정
-  @Transactional
-  public MemberResponse updateLoginId(String newLoginId, Member member) {
-    if (newLoginId == null || newLoginId.trim().isEmpty()) {
-      throw new CustomException(ErrorCode.INVALID_LOGINID);
-    }
-    if (memberRepository.findByLoginId(newLoginId).isPresent()) {
-      throw new CustomException(ErrorCode.HAS_ID);
-    }
-    member.updateLoginId(newLoginId);
+    member.setNickName(newNickName);
     memberRepository.save(member);
     return new MemberResponse(member);
   }

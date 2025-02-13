@@ -10,9 +10,9 @@ import kdt.web_ide.members.entity.Member;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
-  Optional<Member> findByNickName(String nickName);
+  Optional<Member> findByKakaoId(Long kakaoId);
 
-  Optional<Member> findByLoginId(String userId);
+  Optional<Member> findByNickName(String nickName);
 
   @Query("""
     Select br.member

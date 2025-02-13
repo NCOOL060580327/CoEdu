@@ -11,14 +11,14 @@ public class LoginResponseDto {
 
   private Long memberId;
   private String nickName;
-  private String loginId;
+  private String profileImage;
   private TokenResponse tokenResponse;
 
   @Builder
   public LoginResponseDto(Member member, TokenResponse tokenResponse) {
     this.memberId = member.getMemberId();
     this.nickName = member.getNickName();
-    this.loginId = member.getLoginId();
+    this.profileImage = member.getProfileImage();
     this.tokenResponse = tokenResponse;
   }
 }

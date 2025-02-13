@@ -7,8 +7,6 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -31,12 +29,6 @@ public class WebSecurityConfig {
   private final JwtAuthFilter jwtAuthenticationFilter;
   private final JwtExceptionFilter jwtExceptionFilter;
   private final CustomAccessDeniedHandler customAccessDeniedHandler;
-
-  // 비밀번호 암호화 방식 설정
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
 
   // 보안 설정
   @Bean
@@ -62,7 +54,9 @@ public class WebSecurityConfig {
                         "/v3/api-docs/**",
                         "/swagger-resources/**",
                         "/webjars/**",
-                        "/health")
+                        "/health",
+                        "/kakao/**",
+                        "/api/auth/login")
                     .permitAll()
                     .requestMatchers("/api/auth/**", "/chatting/**", "/api/chat/room")
                     .permitAll()

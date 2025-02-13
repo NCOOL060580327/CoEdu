@@ -23,7 +23,7 @@ public class CustomUserDetailService implements UserDetailsService {
     log.info("User Name = {}", userId);
     Member member =
         memberRepository
-            .findByLoginId(userId)
+            .findById(Long.parseLong(userId))
             .orElseThrow(
                 () -> {
                   log.error("사용자를 찾을 수 없습니다: {}", userId);
