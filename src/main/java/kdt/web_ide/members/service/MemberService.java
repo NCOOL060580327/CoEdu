@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import kdt.web_ide.common.exception.CustomException;
 import kdt.web_ide.common.exception.ErrorCode;
+import kdt.web_ide.members.dto.request.TestSignUpRequest;
 import kdt.web_ide.members.dto.response.LoginResponseDto;
 import kdt.web_ide.members.dto.response.MemberResponse;
 import kdt.web_ide.members.dto.response.TokenResponse;
@@ -28,8 +29,37 @@ public class MemberService {
   private final MemberRepository memberRepository;
   private final RequestOAuthInfoService requestOAuthInfoService;
   private final JwtProvider jwtProvider;
+  private final String DEFAULT_PROFILE_IMAGE_URL =
+      "https://ide-project-bucket.s3.ap-northeast-2.amazonaws.com/profile-image/4510b03e-aded-43f1-b063-ccda7c734681_79516d5a-bdb1-4fbd-918e-6c56a38705c75070529700289430514_코에듀_기본_프로필.png";
 
   private final S3Uploader s3Uploader;
+
+  public void testSignUp(TestSignUpRequest request) {
+
+    Member member =
+        memberRepository.save(
+            Member.builder()
+                .email(request.email())
+                .nickName("test")
+                .password(request.password())
+                .profileImage(DEFAULT_PROFILE_IMAGE_URL)
+                .build());
+  }
+
+  public LoginResponseDto testLogin(TestSignUpRequest request) {
+    Member member =
+        memberRepository
+            .findByEmail(request.email())
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+    String accessToken = jwtProvider.generateAccessToken(member.getMemberId());
+    String refreshToken = jwtProvider.generateRefreshToken(member.getMemberId());
+
+    return LoginResponseDto.builder()
+        .member(member)
+        .tokenResponse(new TokenResponse(accessToken, refreshToken))
+        .build();
+  }
 
   public LoginResponseDto login(OAuthLoginParams params) {
     OAuthInfoResponse oAuthInfoResponse = requestOAuthInfoService.request(params);

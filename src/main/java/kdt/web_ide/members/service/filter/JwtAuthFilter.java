@@ -42,7 +42,8 @@ public class JwtAuthFilter extends GenericFilterBean {
 
     if (token != null) {
       if (jwtProvider.validateToken(token)) {
-        Long memberId = Long.parseLong(jwtProvider.getUserInfoFromToken(token).getSubject());
+
+        Long memberId = jwtProvider.getUserInfoFromToken(token).get("memberId", Long.class);
         UserDetails userDetails = customUserDetailService.loadUserByUsername(memberId.toString());
 
         if (userDetails != null) {

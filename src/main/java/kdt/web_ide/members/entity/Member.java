@@ -37,6 +37,10 @@ public class Member extends BaseTimeEntity {
   @Column(name = "identification_code")
   private String identificationCode;
 
+  private String email;
+
+  private String password;
+
   @ElementCollection(fetch = FetchType.EAGER)
   @CollectionTable(name = "member_roles", joinColumns = @JoinColumn(name = "member_id"))
   @Enumerated(EnumType.STRING)

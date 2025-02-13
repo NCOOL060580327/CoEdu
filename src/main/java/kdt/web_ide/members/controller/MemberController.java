@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kdt.web_ide.members.dto.request.TestSignUpRequest;
 import kdt.web_ide.members.dto.response.MemberResponse;
 import kdt.web_ide.members.dto.response.TokenResponse;
 import kdt.web_ide.members.kakao.KakaoLoginParams;
@@ -27,7 +28,22 @@ public class MemberController {
 
   private final MemberService memberService;
 
+  @Operation(summary = "임시 회원가입 API", description = "임시 회원가입")
+  @PostMapping("/testjoin")
+  public ResponseEntity<?> testSignUp(@RequestBody TestSignUpRequest request) {
+    memberService.testSignUp(request);
+    return ResponseEntity.status(HttpStatus.OK)
+        .body("아이디 : " + request.email() + " 비밀번호 : " + request.password());
+  }
+
+  @Operation(summary = "임시 로그인 API", description = "임시 로그인")
+  @PostMapping("/testlogin")
+  public ResponseEntity<?> testLogin(@RequestBody TestSignUpRequest request) {
+    return ResponseEntity.status(HttpStatus.OK).body(memberService.testLogin(request));
+  }
+
   // 로그인
+  @Operation(summary = "카카오 로그인/회원가입 API", description = "카카오 로그인/회원가입")
   @PostMapping("/login")
   public ResponseEntity<?> login(@RequestBody KakaoLoginParams params) {
     return ResponseEntity.status(HttpStatus.OK).body(memberService.login(params));

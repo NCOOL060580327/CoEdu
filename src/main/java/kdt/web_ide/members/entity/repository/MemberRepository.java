@@ -14,6 +14,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
   Optional<Member> findByNickName(String nickName);
 
+  Optional<Member> findByEmail(String email);
+
   @Query("""
     Select br.member
     From BoardUser br

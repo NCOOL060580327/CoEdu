@@ -56,7 +56,9 @@ public class WebSecurityConfig {
                         "/webjars/**",
                         "/health",
                         "/kakao/**",
-                        "/api/auth/login")
+                        "/api/auth/login",
+                        "/api/auth/testjoin",
+                        "api/auth/testlogin")
                     .permitAll()
                     .requestMatchers("/api/auth/**", "/chatting/**", "/api/chat/room")
                     .permitAll()
