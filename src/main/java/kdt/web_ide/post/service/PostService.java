@@ -56,7 +56,8 @@ public class PostService {
 
     String fileName =
         generateFileName(requestDto.getName(), String.valueOf(requestDto.getLanguage()));
-    String filePath = uploadEmptyFileToS3(fileName, board.getId());
+    String filePath = "test";
+    // uploadEmptyFileToS3(fileName, board.getId());
 
     Post post =
         Post.builder()
