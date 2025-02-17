@@ -3,6 +3,7 @@ package kdt.web_ide.members.oAuth;
 import org.springframework.stereotype.Component;
 
 import kdt.web_ide.members.kakao.KakaoReissueParams;
+import kdt.web_ide.members.kakao.KakaoToken;
 
 @Component
 public class RequestOAuthInfoService {
@@ -13,13 +14,15 @@ public class RequestOAuthInfoService {
     this.client = client;
   }
 
-  public OAuthInfoResponse request(OAuthLoginParams params) {
-    String accessToken = client.requestAccessToken(params);
+  public OAuthInfoResponse request(String accessToken) {
     return client.requestOauthInfo(accessToken);
   }
 
-  public OAuthInfoResponse reissue(KakaoReissueParams params) {
-    String accessToken = client.reissueAccessToken(params);
-    return client.requestOauthInfo(accessToken);
+  public KakaoToken login(OAuthLoginParams params) {
+    return client.requestAccessToken(params);
+  }
+
+  public KakaoToken reissue(KakaoReissueParams params) {
+    return client.reissueAccessToken(params);
   }
 }

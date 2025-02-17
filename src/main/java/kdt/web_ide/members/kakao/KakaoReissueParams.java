@@ -3,11 +3,13 @@ package kdt.web_ide.members.kakao;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class KakaoReissueParams {
 
   private String refreshToken;

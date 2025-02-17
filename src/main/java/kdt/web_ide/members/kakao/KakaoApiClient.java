@@ -18,7 +18,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class KakaoApiClient implements OAuthApiClient {
 
-  private static final String GRANT_TYPE = "authorization_code";
+  private static final String LOGIN_GRANT_TYPE = "authorization_code";
+  private static final String REFRESH_GRANT_TYPE = "refresh_token";
 
   @Value("${oauth.kakao.url.auth}")
   private String authUrl;
@@ -35,7 +36,7 @@ public class KakaoApiClient implements OAuthApiClient {
   private final RestTemplate restTemplate;
 
   @Override
-  public String requestAccessToken(OAuthLoginParams params) {
+  public KakaoToken requestAccessToken(OAuthLoginParams params) {
 
     String url = authUrl + "/oauth/token";
 
@@ -44,7 +45,7 @@ public class KakaoApiClient implements OAuthApiClient {
         MediaType.valueOf("application/x-www-form-urlencoded;charset=utf-8"));
 
     MultiValueMap<String, String> body = params.makeBody();
-    body.add("grant_type", GRANT_TYPE);
+    body.add("grant_type", LOGIN_GRANT_TYPE);
     body.add("client_id", clientId);
     body.add("client_secret", clientSecret);
 
@@ -54,7 +55,7 @@ public class KakaoApiClient implements OAuthApiClient {
 
     assert response != null;
 
-    return response.getAccessToken();
+    return response;
   }
 
   @Override
@@ -74,14 +75,14 @@ public class KakaoApiClient implements OAuthApiClient {
   }
 
   @Override
-  public String reissueAccessToken(KakaoReissueParams params) {
+  public KakaoToken reissueAccessToken(KakaoReissueParams params) {
     String url = authUrl + "/oauth/token";
 
     HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
     MultiValueMap<String, String> body = params.makeBody();
-    body.add("grant_type", GRANT_TYPE);
+    body.add("grant_type", REFRESH_GRANT_TYPE);
     body.add("client_id", clientId);
     body.add("client_secret", clientSecret);
 
@@ -91,6 +92,6 @@ public class KakaoApiClient implements OAuthApiClient {
 
     assert response != null;
 
-    return response.getAccessToken();
+    return response;
   }
 }

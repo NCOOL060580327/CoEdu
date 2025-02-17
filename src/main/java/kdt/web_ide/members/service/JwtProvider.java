@@ -4,6 +4,7 @@ import java.security.Key;
 import java.util.*;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -33,8 +34,6 @@ public class JwtProvider {
 
   private static final long REFRESH_TOKEN_TIME = 1000 * 60 * 60 * 24 * 7L; // 7일
   public static final Long TOKEN_TIME = 60 * 60 * 1000L; // 60분
-
-  private static final Set<String> blacklistedTokens = new HashSet<>();
 
   @Value("${jwt.secret.key}")
   private String secretKey;
@@ -76,7 +75,7 @@ public class JwtProvider {
         .setClaims(claims)
         .setExpiration(new Date(now.getTime() + expireTime))
         .setIssuedAt(now)
-        .signWith(SignatureAlgorithm.HS256, key)
+        .signWith(signatureAlgorithm, key)
         .compact();
   }
 
@@ -147,8 +146,20 @@ public class JwtProvider {
   public Long parseRefreshToken(String token) {
     if (validateToken(token)) {
       Claims claims = getUserInfoFromToken(token);
-      return Long.parseLong(claims.getSubject());
+      return claims.get("memberId", Long.class);
     }
     throw new CustomException(ErrorCode.USER_NOT_FOUND);
+  }
+
+  /** 쿠키에서 refreshToken 추출 */
+  public Optional<String> extractRefreshToken(HttpServletRequest request) {
+    if (request.getCookies() == null) {
+      return Optional.empty();
+    }
+
+    return Arrays.stream(request.getCookies())
+        .filter(cookie -> "refreshToken".equals(cookie.getName()))
+        .map(Cookie::getValue)
+        .findFirst();
   }
 }

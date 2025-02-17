@@ -1,12 +1,13 @@
 package kdt.web_ide.members.oAuth;
 
 import kdt.web_ide.members.kakao.KakaoReissueParams;
+import kdt.web_ide.members.kakao.KakaoToken;
 
 public interface OAuthApiClient {
 
-  String requestAccessToken(OAuthLoginParams params);
+  KakaoToken requestAccessToken(OAuthLoginParams params);
 
-  String reissueAccessToken(KakaoReissueParams params);
+  KakaoToken reissueAccessToken(KakaoReissueParams params);
 
   OAuthInfoResponse requestOauthInfo(String accessToken);
 }
