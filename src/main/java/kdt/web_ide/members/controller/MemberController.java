@@ -6,6 +6,9 @@ import java.time.Duration;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
@@ -25,12 +28,17 @@ import kdt.web_ide.members.kakao.KakaoLoginParams;
 import kdt.web_ide.members.service.CustomUserDetails;
 import kdt.web_ide.members.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "회원 API")
 @RequestMapping("/api/auth")
+@Slf4j
 public class MemberController {
+
+  private final JobLauncher jobLauncher;
+  private final Job tokenCleanupJob;
 
   private final MemberService memberService;
 
@@ -127,10 +135,23 @@ public class MemberController {
   }
 
   @Operation(summary = "카카오 엑세스 토큰 재발급 API")
-  @GetMapping("/kakao")
+  @PostMapping("/kakao")
   public ResponseEntity<TokenResponse> getKakaoAccessToken(
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     return ResponseEntity.status(HttpStatus.OK)
         .body(memberService.getKakaoAccessToken(userDetails.getMember().getMemberId()));
+  }
+
+  @Operation(summary = "블랙리스트 토큰 수동 삭제")
+  @PostMapping("/cleanup")
+  public ResponseEntity<String> runTokenCleanUp() {
+    try {
+      jobLauncher.run(tokenCleanupJob, new JobParameters());
+      return ResponseEntity.ok("Token cleanup batch job started.");
+    } catch (Exception e) {
+      log.error("에러", e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body("Failed to start batch job.");
+    }
   }
 }
