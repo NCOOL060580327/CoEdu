@@ -42,7 +42,11 @@ public enum ErrorCode {
 
   // 게시글
   POST_NOT_FOUND(HttpStatus.NOT_FOUND, "POST-001", "게시글을 찾을 수 없습니다."),
-  JSON_PROCESSING_ERROR(HttpStatus.BAD_REQUEST, "POST-002", "JSON 파싱 에러");
+  JSON_PROCESSING_ERROR(HttpStatus.BAD_REQUEST, "POST-002", "JSON 파싱 에러"),
+
+  // 일정
+  SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "SCHEDULE-001", "일정을 찾을 수 없습니다."),
+  SCHEDULE_ACCESS_ERROR(HttpStatus.UNAUTHORIZED, "SCHEDULE-002", "권한이 없습니다.");
 
   private final HttpStatus httpStatus; // HttpStatus
   private final String code; // ACCOUNT-001

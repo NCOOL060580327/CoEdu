@@ -83,6 +83,7 @@ public class KakaoApiClient implements OAuthApiClient {
     MultiValueMap<String, String> body = params.makeBody();
     body.add("grant_type", GRANT_TYPE);
     body.add("client_id", clientId);
+    body.add("refresh_token", params.getRefreshToken());
     body.add("client_secret", clientSecret);
 
     HttpEntity<?> request = new HttpEntity<>(body, httpHeaders);
