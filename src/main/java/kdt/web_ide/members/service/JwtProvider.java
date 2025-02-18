@@ -162,4 +162,11 @@ public class JwtProvider {
         .map(Cookie::getValue)
         .findFirst();
   }
+
+  /** 토큰에서 만료시간 추출 */
+  public Date extractExpiration(String token) {
+    Claims claims =
+        Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
+    return claims.getExpiration();
+  }
 }

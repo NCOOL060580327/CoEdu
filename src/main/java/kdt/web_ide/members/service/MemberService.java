@@ -1,6 +1,8 @@
 package kdt.web_ide.members.service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -18,7 +20,9 @@ import kdt.web_ide.common.exception.ErrorCode;
 import kdt.web_ide.members.dto.request.TestSignUpRequest;
 import kdt.web_ide.members.dto.response.*;
 import kdt.web_ide.members.entity.Member;
+import kdt.web_ide.members.entity.TokenBlacklist;
 import kdt.web_ide.members.entity.repository.MemberRepository;
+import kdt.web_ide.members.entity.repository.TokenBlacklistRepository;
 import kdt.web_ide.members.kakao.KakaoReissueParams;
 import kdt.web_ide.members.kakao.KakaoToken;
 import kdt.web_ide.members.oAuth.OAuthInfoResponse;
@@ -32,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberService {
 
   private final MemberRepository memberRepository;
+  private final TokenBlacklistRepository tokenBlacklistRepository;
   private final RequestOAuthInfoService requestOAuthInfoService;
   private final JwtProvider jwtProvider;
   private final String DEFAULT_PROFILE_IMAGE_URL =
@@ -128,6 +133,8 @@ public class MemberService {
     member.setRefreshToken(newRefreshToken);
     memberRepository.save(member);
 
+    addToBlacklist(refreshToken);
+
     return new RefreshResponseDto(newAccessToken, newRefreshToken);
   }
 
@@ -204,5 +211,24 @@ public class MemberService {
     scheduleTokenExpiration(memberId, Long.parseLong(kakaoToken.getExpiresIn()), TimeUnit.SECONDS);
 
     return new TokenResponse(kakaoToken.getAccessToken());
+  }
+
+  // 블랙리스트에 토큰 추가
+  private void addToBlacklist(String refreshToken) {
+    if (!tokenBlacklistRepository.existsByRefreshToken(refreshToken)) {
+      Date expiredAt = jwtProvider.extractExpiration(refreshToken);
+      long expirationMillis = expiredAt.getTime() - System.currentTimeMillis();
+
+      if (expirationMillis > 0) {
+        tokenBlacklistRepository.save(
+            TokenBlacklist.of(
+                refreshToken,
+                LocalDateTime.now().plusNanos(TimeUnit.MILLISECONDS.toNanos(expirationMillis))));
+      } else {
+        throw new CustomException(ErrorCode.INVALID_TOKEN);
+      }
+    } else {
+      throw new CustomException(ErrorCode.INVALID_TOKEN);
+    }
   }
 }
