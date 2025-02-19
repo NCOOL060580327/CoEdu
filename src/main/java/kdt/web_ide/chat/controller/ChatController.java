@@ -9,6 +9,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import kdt.web_ide.chat.dto.request.ChatMessageRequestDto;
 import kdt.web_ide.chat.dto.response.GetChatMessageResponseDto;
@@ -39,5 +40,15 @@ public class ChatController {
       @PathVariable("roomId") Long roomId, @AuthenticationPrincipal CustomUserDetails userDetails) {
     Long memberId = memberService.getMember(userDetails.getMember()).getMemberId();
     return ResponseEntity.status(HttpStatus.OK).body(chatService.getChatMessage(roomId, memberId));
+  }
+
+  @PostMapping("/{roomId}/images")
+  public ResponseEntity<Void> sendImages(
+      @PathVariable("roomId") Long roomId,
+      @RequestPart("imageFile") List<MultipartFile> imageFiles,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    Long memberId = userDetails.getMember().getMemberId();
+    chatService.sendImage(memberId, roomId, imageFiles);
+    return ResponseEntity.status(HttpStatus.OK).body(null);
   }
 }
