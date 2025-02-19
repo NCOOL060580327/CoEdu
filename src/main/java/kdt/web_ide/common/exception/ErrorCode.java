@@ -20,18 +20,18 @@ public enum ErrorCode {
   INVALID_LOGINID(HttpStatus.NOT_FOUND, "ACCOUNT-009", "유효하지 않은 아이디입니다."),
   INVALID_IMAGE(HttpStatus.BAD_REQUEST, "ACCOUNT-010", "유효하지 않은 이미지입니다."),
   INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "ACCOUNT-011", "유효하지 않은 이미지입니다."),
+  KAKAO_REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "ACCOUNT-0012", "유효하지 않은 토큰입니다."),
 
   // 채팅방
-
   CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "ACCOUNT-008", "채팅방을 찾을 수 없습니다."),
 
   // 게시판
-
   MEMBER_ALREADY_IN_BOARD(HttpStatus.BAD_REQUEST, "BOARD-001", "이미 게시판에 초대된 멤버입니다."),
   NO_PERMISSION(HttpStatus.UNAUTHORIZED, "BOARD-002", "권한이 없습니다."),
   BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "BOARD-003", "존재하지 않는 게시판입니다."),
   MEMBER_NOT_IN_BOARD(HttpStatus.NOT_FOUND, "BOARD-004", "게시판에 존재하지 않는 멤버입니다."),
   INVALID_TITLE(HttpStatus.BAD_REQUEST, "BOARD-005", "제목 입력은 필수입니다."),
+
   // S3
   S3_UPLOAD_ERROR(HttpStatus.BAD_REQUEST, "S3-001", "S3 업로드 실패"),
   FILE_EXECUTION_ERROR(HttpStatus.BAD_REQUEST, "S3-002", "파일 실행 실패"),

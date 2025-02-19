@@ -1,7 +1,15 @@
 package kdt.web_ide.members.service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
@@ -10,12 +18,13 @@ import org.springframework.web.multipart.MultipartFile;
 import kdt.web_ide.common.exception.CustomException;
 import kdt.web_ide.common.exception.ErrorCode;
 import kdt.web_ide.members.dto.request.TestSignUpRequest;
-import kdt.web_ide.members.dto.response.LoginResponseDto;
-import kdt.web_ide.members.dto.response.MemberResponse;
-import kdt.web_ide.members.dto.response.TokenResponse;
+import kdt.web_ide.members.dto.response.*;
 import kdt.web_ide.members.entity.Member;
+import kdt.web_ide.members.entity.TokenBlacklist;
 import kdt.web_ide.members.entity.repository.MemberRepository;
+import kdt.web_ide.members.entity.repository.TokenBlacklistRepository;
 import kdt.web_ide.members.kakao.KakaoReissueParams;
+import kdt.web_ide.members.kakao.KakaoToken;
 import kdt.web_ide.members.oAuth.OAuthInfoResponse;
 import kdt.web_ide.members.oAuth.OAuthLoginParams;
 import kdt.web_ide.members.oAuth.RequestOAuthInfoService;
@@ -27,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberService {
 
   private final MemberRepository memberRepository;
+  private final TokenBlacklistRepository tokenBlacklistRepository;
   private final RequestOAuthInfoService requestOAuthInfoService;
   private final JwtProvider jwtProvider;
   private final String DEFAULT_PROFILE_IMAGE_URL =
@@ -34,19 +44,9 @@ public class MemberService {
 
   private final S3Uploader s3Uploader;
 
-  public void testSignUp(TestSignUpRequest request) {
+  private final ConcurrentHashMap<Long, String> kakaoAccessTokenCache = new ConcurrentHashMap<>();
 
-    Member member =
-        memberRepository.save(
-            Member.builder()
-                .email(request.email())
-                .nickName("test")
-                .password(request.password())
-                .profileImage(DEFAULT_PROFILE_IMAGE_URL)
-                .build());
-  }
-
-  public LoginResponseDto testLogin(TestSignUpRequest request) {
+  public LoginResponseWithToken testLogin(TestSignUpRequest request) {
     Member member =
         memberRepository
             .findByEmail(request.email())
@@ -55,28 +55,40 @@ public class MemberService {
     String accessToken = jwtProvider.generateAccessToken(member.getMemberId());
     String refreshToken = jwtProvider.generateRefreshToken(member.getMemberId());
 
-    return LoginResponseDto.builder()
-        .member(member)
-        .tokenResponse(new TokenResponse(accessToken, refreshToken))
-        .build();
+    return new LoginResponseWithToken(
+        LoginResponseDto.builder()
+            .member(member)
+            .tokenResponse(new TokenResponse(accessToken))
+            .build(),
+        refreshToken);
   }
 
-  public LoginResponseDto login(OAuthLoginParams params) {
-    OAuthInfoResponse oAuthInfoResponse = requestOAuthInfoService.request(params);
+  public LoginResponseWithToken login(OAuthLoginParams params) {
+
+    KakaoToken kakaoToken = requestOAuthInfoService.login(params);
+
+    OAuthInfoResponse oAuthInfoResponse =
+        requestOAuthInfoService.request(kakaoToken.getAccessToken());
 
     Long memberId = findOrCreateMember(oAuthInfoResponse);
 
     String accessToken = jwtProvider.generateAccessToken(memberId);
     String refreshToken = jwtProvider.generateRefreshToken(memberId);
 
+    kakaoAccessTokenCache.put(memberId, kakaoToken.getAccessToken());
+    scheduleTokenExpiration(memberId, Long.parseLong(kakaoToken.getExpiresIn()), TimeUnit.SECONDS);
+
     Member member = findMember(memberId);
     member.setRefreshToken(refreshToken);
+    member.setKakaoRefreshToken(kakaoToken.getRefreshToken());
     memberRepository.save(member);
 
-    return LoginResponseDto.builder()
-        .member(member)
-        .tokenResponse(new TokenResponse(accessToken, refreshToken))
-        .build();
+    return new LoginResponseWithToken(
+        LoginResponseDto.builder()
+            .member(member)
+            .tokenResponse(new TokenResponse(accessToken))
+            .build(),
+        refreshToken);
   }
 
   public Long findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
@@ -100,9 +112,13 @@ public class MemberService {
         .getMemberId();
   }
 
-  public TokenResponse reissue(KakaoReissueParams params) {
+  // 자체 refresh 토큰 발급
+  public RefreshResponseDto refresh(HttpServletRequest request, HttpServletResponse response) {
 
-    String refreshToken = params.getRefreshToken();
+    String refreshToken =
+        jwtProvider
+            .extractRefreshToken(request)
+            .orElseThrow(() -> new CustomException(ErrorCode.INVALID_TOKEN));
 
     Long memberId = jwtProvider.parseRefreshToken(refreshToken);
 
@@ -111,16 +127,15 @@ public class MemberService {
             .findById(memberId)
             .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-    if (!refreshToken.equals(member.getRefreshToken())) {
-      throw new CustomException(ErrorCode.INVALID_TOKEN);
-    }
-
-    String newAccessToken = jwtProvider.generateAccessToken(member.getMemberId());
-    String newRefreshToken = jwtProvider.generateRefreshToken(member.getMemberId());
+    String newAccessToken = jwtProvider.generateAccessToken(memberId);
+    String newRefreshToken = jwtProvider.generateRefreshToken(memberId);
 
     member.setRefreshToken(newRefreshToken);
+    memberRepository.save(member);
 
-    return new TokenResponse(newAccessToken, newRefreshToken);
+    addToBlacklist(refreshToken);
+
+    return new RefreshResponseDto(newAccessToken, newRefreshToken);
   }
 
   public Member findMember(Long memberId) {
@@ -160,5 +175,60 @@ public class MemberService {
     member.setNickName(newNickName);
     memberRepository.save(member);
     return new MemberResponse(member);
+  }
+
+  private void scheduleTokenExpiration(Long memberId, long duration, TimeUnit unit) {
+    Executors.newSingleThreadScheduledExecutor()
+        .schedule(
+            () -> {
+              kakaoAccessTokenCache.remove(memberId);
+            },
+            duration,
+            unit);
+  }
+
+  // 카카오 액세스 토큰 조회
+  public TokenResponse getKakaoAccessToken(Long memberId) {
+
+    if (kakaoAccessTokenCache.containsKey(memberId)) {
+      return new TokenResponse(kakaoAccessTokenCache.get(memberId));
+    }
+
+    Member member =
+        memberRepository
+            .findById(memberId)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+    String kakaoRefreshToken =
+        Optional.ofNullable(member.getKakaoRefreshToken())
+            .orElseThrow(() -> new CustomException(ErrorCode.KAKAO_REFRESH_TOKEN_NOT_FOUND));
+
+    KakaoReissueParams params = new KakaoReissueParams(kakaoRefreshToken);
+
+    KakaoToken kakaoToken = requestOAuthInfoService.reissue(params);
+
+    kakaoAccessTokenCache.put(memberId, kakaoToken.getAccessToken());
+    scheduleTokenExpiration(memberId, Long.parseLong(kakaoToken.getExpiresIn()), TimeUnit.SECONDS);
+
+    return new TokenResponse(kakaoToken.getAccessToken());
+  }
+
+  // 블랙리스트에 토큰 추가
+  private void addToBlacklist(String refreshToken) {
+    if (!tokenBlacklistRepository.existsByRefreshToken(refreshToken)) {
+      Date expiredAt = jwtProvider.extractExpiration(refreshToken);
+      long expirationMillis = expiredAt.getTime() - System.currentTimeMillis();
+
+      if (expirationMillis > 0) {
+        tokenBlacklistRepository.save(
+            TokenBlacklist.of(
+                refreshToken,
+                LocalDateTime.now().plusNanos(TimeUnit.MILLISECONDS.toNanos(expirationMillis))));
+      } else {
+        throw new CustomException(ErrorCode.INVALID_TOKEN);
+      }
+    } else {
+      throw new CustomException(ErrorCode.INVALID_TOKEN);
+    }
   }
 }

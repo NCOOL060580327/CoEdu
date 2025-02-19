@@ -34,6 +34,10 @@ public class Member extends BaseTimeEntity {
   @Column(name = "refresh_token")
   private String refreshToken;
 
+  @Setter
+  @Column(name = "kakao_refresh_token")
+  private String kakaoRefreshToken;
+
   @Column(name = "identification_code")
   private String identificationCode;
 

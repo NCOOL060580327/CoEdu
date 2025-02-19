@@ -34,9 +34,9 @@ public class WebSocketInterceptor implements ChannelInterceptor {
 
         Claims claims = jwtProvider.getUserInfoFromToken(token);
 
-        String loginId = claims.get("loginId", String.class);
+        String memberId = claims.get("memberId", Long.class).toString();
 
-        Authentication authentication = jwtProvider.createUserAuthentication(loginId);
+        Authentication authentication = jwtProvider.createUserAuthentication(memberId);
 
         accessor.setUser(authentication);
 
