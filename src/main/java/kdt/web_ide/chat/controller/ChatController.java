@@ -11,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.swagger.v3.oas.annotations.Operation;
 import kdt.web_ide.chat.dto.request.ChatMessageRequestDto;
 import kdt.web_ide.chat.dto.response.GetChatMessageResponseDto;
 import kdt.web_ide.chat.service.ChatService;
@@ -42,7 +43,8 @@ public class ChatController {
     return ResponseEntity.status(HttpStatus.OK).body(chatService.getChatMessage(roomId, memberId));
   }
 
-  @PostMapping("/{roomId}/images")
+  @PostMapping(value = "/{roomId}/images", consumes = "multipart/form-data")
+  @Operation(summary = "이미지 전송")
   public ResponseEntity<Void> sendImages(
       @PathVariable("roomId") Long roomId,
       @RequestPart("imageFile") List<MultipartFile> imageFiles,

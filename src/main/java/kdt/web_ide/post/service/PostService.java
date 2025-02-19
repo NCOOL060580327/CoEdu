@@ -56,15 +56,14 @@ public class PostService {
 
     String fileName =
         generateFileName(requestDto.getName(), String.valueOf(requestDto.getLanguage()));
-    String filePath = "test";
-    // uploadEmptyFileToS3(fileName, board.getId());
+    uploadEmptyFileToS3(fileName, board.getId());
 
     Post post =
         Post.builder()
             .board(board)
             .name(requestDto.getName())
             .language(requestDto.getLanguage())
-            .filePath(filePath)
+            .filePath(fileName)
             .createdAt(LocalDateTime.now())
             .build();
 
