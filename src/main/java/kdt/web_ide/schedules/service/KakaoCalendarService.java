@@ -12,7 +12,6 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import kdt.web_ide.members.entity.Member;
-import kdt.web_ide.members.kakao.KakaoReissueParams;
 import kdt.web_ide.members.oAuth.OAuthApiClient;
 import kdt.web_ide.schedules.entity.Schedule;
 import lombok.RequiredArgsConstructor;
@@ -28,24 +27,15 @@ public class KakaoCalendarService {
   OAuthApiClient oAuthApiClient;
   private static final String KAKAO_CALENDAR_POST_URL =
       "https://kapi.kakao.com/v2/api/calendar/create/event";
-  private static final String KAKAP_CALENDAR_UPDATE_URL =
+  private static final String KAKAO_CALENDAR_UPDATE_URL =
       "https://kapi.kakao.com/v2/api/calendar/update/event/host";
   private static final String KAKAO_CALENDAR_DELETE_URL =
       "https://kapi.kakao.com/v2/api/calendar/delete/event";
 
-  private String getUserToken(Member member) {
-    String refreshToken = member.getRefreshToken();
-    String accessToken = oAuthApiClient.reissueAccessToken(new KakaoReissueParams(refreshToken));
-    if (accessToken == null || accessToken.isEmpty()) {
-      throw new RuntimeException("카카오 액세스 토큰 갱신 실패");
-    }
-    return accessToken;
-  }
-
   @Transactional
   public String registerSchedule(Member member, Schedule schedule) {
     try {
-      String accessToken = getUserToken(member);
+      String accessToken = member.getKakaoRefreshToken();
       // 요청 헤더 설정
       HttpHeaders headers = new HttpHeaders();
       headers.setBearerAuth(accessToken);
@@ -96,7 +86,7 @@ public class KakaoCalendarService {
   @Transactional
   public void updateSchedule(Member member, Schedule schedule, String eventId) {
     try {
-      String accessToken = getUserToken(member);
+      String accessToken = member.getKakaoRefreshToken();
 
       // 요청 헤더 설정
       HttpHeaders headers = new HttpHeaders();
@@ -135,7 +125,7 @@ public class KakaoCalendarService {
       // API 호출
       ResponseEntity<String> response =
           restTemplate.exchange(
-              KAKAP_CALENDAR_UPDATE_URL, HttpMethod.POST, requestEntity, String.class);
+              KAKAO_CALENDAR_UPDATE_URL, HttpMethod.POST, requestEntity, String.class);
 
       log.info("Update Response: " + response.getBody());
     } catch (Exception e) {
@@ -146,7 +136,7 @@ public class KakaoCalendarService {
   @Transactional
   public void deleteSchedule(Member member, String eventId) {
     try {
-      String accessToken = getUserToken(member);
+      String accessToken = member.getRefreshToken();
 
       // 요청 헤더 설정
       HttpHeaders headers = new HttpHeaders();

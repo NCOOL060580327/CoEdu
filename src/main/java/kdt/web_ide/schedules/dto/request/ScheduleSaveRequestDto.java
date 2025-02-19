@@ -4,9 +4,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import kdt.web_ide.boards.entity.Board;
 import kdt.web_ide.members.entity.Member;
@@ -45,8 +45,7 @@ public class ScheduleSaveRequestDto {
   @NotNull(message = "경도는 필수입니다.")
   private Double longitude;
 
-  @NotEmpty(message = "참여자 목록은 필수입니다.")
-  @Size(min = 1, message = "적어도 한 명의 참여자가 필요합니다.")
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private List<MemberDto> members;
 
   @Getter

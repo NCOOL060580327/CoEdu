@@ -1,5 +1,6 @@
 package kdt.web_ide.schedules.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -45,6 +46,13 @@ public class ScheduleService {
     Schedule schedule = requestDto.toEntity(board);
     scheduleRepository.save(schedule);
 
+    // 멤버 리스트가 null이거나 비어 있으면, 생성자만 추가하고 종료
+    if (requestDto.getMembers() == null || requestDto.getMembers().isEmpty()) {
+      List<Member> members = new ArrayList<>();
+      members.add(creator);
+      scheduleMemberRepository.saveAll(requestDto.toMemberList(schedule, members));
+      return;
+    }
     // 멤버 식별 코드 리스트 추출
     List<String> identificationCodes =
         requestDto.getMembers().stream()
