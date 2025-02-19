@@ -28,5 +28,3 @@ oauth:
     url:
       auth: https://kauth.kakao.com
       api: https://kapi.kakao.com
-
-

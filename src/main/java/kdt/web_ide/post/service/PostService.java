@@ -150,6 +150,7 @@ public class PostService {
   private PostResponseDto mapToResponseDto(Post post, Integer roomId) {
     return PostResponseDto.builder()
         .id(post.getId())
+        .boardTitle(post.getBoard().getTitle())
         .boardId(post.getBoard().getId().intValue())
         .name(post.getName())
         .language(post.getLanguage())

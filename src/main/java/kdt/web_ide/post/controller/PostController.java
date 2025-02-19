@@ -41,7 +41,7 @@ public class PostController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  @GetMapping("/{id}")
+  @GetMapping("/post/{id}")
   @Operation(summary = "게시글 조회", description = "특정 ID의 게시글을 조회합니다.")
   public ResponseEntity<PostResponseDto> getPost(
       @PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -127,7 +127,7 @@ public class PostController {
     return postService.executeFile(id, input);
   }
 
-  @GetMapping("/{boardId}")
+  @GetMapping("/board/{boardId}")
   @Operation(summary = "특정 게시판의 게시글 조회", description = "특정 게시판에 속한 모든 게시글을 조회합니다.")
   public ResponseEntity<List<PostResponseDto>> getPostsByBoardId(
       @PathVariable Long boardId, @AuthenticationPrincipal CustomUserDetails userDetails) {
