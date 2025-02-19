@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import kdt.web_ide.chat.dto.request.ChatMessageRequestDto;
 import kdt.web_ide.chat.dto.response.GetChatMessageResponseDto;
@@ -19,6 +20,7 @@ import kdt.web_ide.chat.entity.repository.ChatRoomMemberRepository;
 import kdt.web_ide.chat.entity.repository.ChatRoomRepository;
 import kdt.web_ide.common.exception.CustomException;
 import kdt.web_ide.common.exception.ErrorCode;
+import kdt.web_ide.file.service.S3Service;
 import kdt.web_ide.members.entity.Member;
 import kdt.web_ide.members.entity.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,8 @@ public class ChatService {
   private final SimpMessagingTemplate simpMessagingTemplate;
 
   private final MemberRepository memberRepository;
+
+  private final S3Service s3Service;
 
   // 메세지 전송
   @Transactional
@@ -108,6 +112,27 @@ public class ChatService {
         simpMessagingTemplate.convertAndSend(
             "/room/unread/" + memberId, UnreadMessageCountResponseDto.of(roomId, notReadCount));
       }
+    }
+  }
+
+  @Transactional
+  public void sendImage(Long senderId, Long chatRoomId, List<MultipartFile> multipartFileList) {
+
+    chatRoomRepository
+        .findById(chatRoomId)
+        .orElseThrow(() -> new CustomException(ErrorCode.CHATROOM_NOT_FOUND));
+
+    memberRepository
+        .findById(senderId)
+        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+    List<String> imageUrlList = s3Service.uploadImages(multipartFileList);
+
+    for (String imageUrl : imageUrlList) {
+
+      ChatMessageRequestDto requestDto = new ChatMessageRequestDto(senderId, imageUrl);
+
+      sendMessage(chatRoomId, requestDto);
     }
   }
 }
