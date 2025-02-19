@@ -9,7 +9,9 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import io.swagger.v3.oas.annotations.Operation;
 import kdt.web_ide.chat.dto.request.ChatMessageRequestDto;
 import kdt.web_ide.chat.dto.response.GetChatMessageResponseDto;
 import kdt.web_ide.chat.service.ChatService;
@@ -39,5 +41,16 @@ public class ChatController {
       @PathVariable("roomId") Long roomId, @AuthenticationPrincipal CustomUserDetails userDetails) {
     Long memberId = memberService.getMember(userDetails.getMember()).getMemberId();
     return ResponseEntity.status(HttpStatus.OK).body(chatService.getChatMessage(roomId, memberId));
+  }
+
+  @PostMapping(value = "/{roomId}/images", consumes = "multipart/form-data")
+  @Operation(summary = "이미지 전송")
+  public ResponseEntity<Void> sendImages(
+      @PathVariable("roomId") Long roomId,
+      @RequestPart("imageFile") List<MultipartFile> imageFiles,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    Long memberId = userDetails.getMember().getMemberId();
+    chatService.sendImage(memberId, roomId, imageFiles);
+    return ResponseEntity.status(HttpStatus.OK).body(null);
   }
 }
