@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import kdt.web_ide.boards.dto.request.BoardSaveRequesetDto;
 import kdt.web_ide.boards.dto.request.BoardUpdateRequestDto;
+import kdt.web_ide.boards.dto.request.BoardUserInviteRequestDto;
 import kdt.web_ide.boards.dto.response.BoardResponseDto;
 import kdt.web_ide.boards.dto.response.BoardUserResponseDto;
 import kdt.web_ide.boards.entity.Board;
@@ -72,27 +73,40 @@ public class BoardService {
     boardRepository.delete(board);
   }
 
-  // 게시판 인원 초대
-  //  @Transactional
-  //  public BoardUserResponseDto inviteMember(
-  //      BoardUserInviteRequestDto requestDto, Long boardId, Member currentMember) {
-  //    if (requestDto.getLoginId() == null || requestDto.getLoginId().isEmpty()) {
-  //      throw new CustomException(ErrorCode.INVALID_LOGINID);
-  //    }
-  //    // 존재하는 게시판인지 확인
-  //    Board thisBoard =
-  //        boardRepository
-  //            .findById(boardId)
-  //            .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
-  //    // 존재하는 멤버인지 확인
-  //    Member member =
-  //        memberRepository
-  //            .findByLoginId(requestDto.getLoginId())
-  //            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-  //    BoardUser newUser = requestDto.toEntity(thisBoard, member);
-  //    boardUserRepository.save(newUser);
-  //    return new BoardUserResponseDto(newUser);
-  //  }
+  @Transactional
+  public BoardUserResponseDto inviteMember(
+      BoardUserInviteRequestDto requestDto, Long boardId, Member currentMember) {
+
+    if (requestDto.getKakaoId() == null) {
+      throw new CustomException(ErrorCode.INVALID_KAKAO_ID);
+    }
+
+    Board board =
+        boardRepository
+            .findById(boardId)
+            .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
+
+    boardUserRepository
+        .findByMemberAndBoardAndIsLeaderTrue(currentMember, board)
+        .orElseThrow(() -> new CustomException(ErrorCode.NO_PERMISSION));
+
+    Member memberToInvite =
+        memberRepository
+            .findByKakaoId(requestDto.getKakaoId())
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+    boardUserRepository
+        .findByMemberAndBoard(memberToInvite, board)
+        .ifPresent(
+            member -> {
+              throw new CustomException(ErrorCode.ALREADY_IN_BOARD);
+            });
+
+    BoardUser newUser = requestDto.toEntity(board, memberToInvite);
+    boardUserRepository.save(newUser);
+
+    return new BoardUserResponseDto(newUser);
+  }
 
   // 게시판 인원 조회
   @Transactional
