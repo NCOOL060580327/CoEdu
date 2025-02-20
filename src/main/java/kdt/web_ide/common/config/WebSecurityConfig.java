@@ -59,7 +59,8 @@ public class WebSecurityConfig {
                         "/api/auth/login",
                         "/api/auth/testjoin",
                         "api/auth/testlogin",
-                        "/actuator/**")
+                        "/actuator/**",
+                        "/metrics/**")
                     .permitAll()
                     .requestMatchers("/api/auth/**", "/chatting/**", "/api/chat/room")
                     .permitAll()
