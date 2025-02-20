@@ -28,3 +28,13 @@ oauth:
     url:
       auth: https://kauth.kakao.com
       api: https://kapi.kakao.com
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ${ACTUATOR_ENDPOINT}
+  metrics:
+    export:
+      prometheus:
+        enabled: true

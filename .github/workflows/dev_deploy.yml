@@ -1,4 +1,4 @@
-name: Orbit dev CI/CD
+name: KDT dev CI/CD
 
 on:
   pull_request:
@@ -66,3 +66,15 @@ jobs:
           region: ap-northeast-2
           deployment_package: Dockerrun.aws.json
           wait_for_environment_recovery: 180
+
+      - name: SSH into EC2 and install Node Exporter
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+              wget https://github.com/prometheus/node_exporter/releases/download/v1.9.0/node_exporter-1.9.0.linux-amd64.tar.gz
+              tar xvfz node_exporter-1.9.0.linux-amd64.tar.gz
+              cd node_exporter-1.9.0.linux-amd64
+              sudo systemctl start node_exporter

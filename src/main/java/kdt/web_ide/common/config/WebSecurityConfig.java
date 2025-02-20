@@ -58,7 +58,8 @@ public class WebSecurityConfig {
                         "/kakao/**",
                         "/api/auth/login",
                         "/api/auth/testjoin",
-                        "api/auth/testlogin")
+                        "api/auth/testlogin",
+                        "/actuator/**")
                     .permitAll()
                     .requestMatchers("/api/auth/**", "/chatting/**", "/api/chat/room")
                     .permitAll()
