@@ -57,8 +57,7 @@ public class WebSecurityConfig {
                         "/health",
                         "/kakao/**",
                         "/api/auth/login",
-                        "/api/auth/testjoin",
-                        "api/auth/testlogin",
+                        "/api/auth/testlogin",
                         "/actuator/**",
                         "/metrics/**")
                     .permitAll()
