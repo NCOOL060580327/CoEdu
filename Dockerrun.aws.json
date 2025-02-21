@@ -5,7 +5,7 @@
       "Name": "app",
       "Image": "groomkdt/kdt:latest",
       "Update": "true",
-      "PortMappings": [
+      "Ports": [
         {
           "ContainerPort": 8080,
           "HostPort": 5000
@@ -15,7 +15,7 @@
     {
       "Name": "node-exporter",
       "Image": "prom/node-exporter:master",
-      "PortMappings": [
+      "Ports": [
         {
           "ContainerPort": 9100
         }
