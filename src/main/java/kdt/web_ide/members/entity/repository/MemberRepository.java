@@ -22,4 +22,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Where br.board.id=:boardId
     """)
   List<Member> findMemberListByBoardId(Long boardId);
+
+  List<Member> findByKakaoIdIn(List<Long> kakaoIds);
+
+  List<Member> findByIdentificationCodeIn(List<String> codeList);
 }
