@@ -1,4 +1,4 @@
-name: Orbit dev CI/CD
+name: KDT dev CI/CD
 
 on:
   pull_request:

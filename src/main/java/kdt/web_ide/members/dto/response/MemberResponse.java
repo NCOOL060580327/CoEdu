@@ -11,6 +11,7 @@ public class MemberResponse {
     this.memberId = member.getMemberId();
     this.nickName = member.getNickName();
     this.profileImage = member.getProfileImage();
+    this.kakaoId = member.getKakaoId();
   }
 
   private final Long memberId;
@@ -18,6 +19,8 @@ public class MemberResponse {
   private final String nickName;
 
   private final String profileImage;
+
+  private final Long kakaoId;
 
   public static MemberResponse of(Member member) {
     return new MemberResponse(member);

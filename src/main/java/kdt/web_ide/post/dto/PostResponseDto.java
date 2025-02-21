@@ -11,6 +11,7 @@ import lombok.Data;
 public class PostResponseDto {
   private Integer id;
   private Integer boardId;
+  private String boardTitle;
   private String name;
   private Language language;
   private String filePath;

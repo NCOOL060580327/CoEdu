@@ -5,9 +5,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import kdt.web_ide.common.exception.CustomException;
 import kdt.web_ide.common.exception.ErrorCode;
@@ -251,5 +255,39 @@ public class S3Service {
 
   private String extractFileName(String filePath) {
     return filePath.substring(filePath.lastIndexOf("/") + 1);
+  }
+
+  public List<String> uploadImages(List<MultipartFile> imageFiles) {
+
+    List<String> imageUrls = new ArrayList<>();
+
+    for (MultipartFile imageFile : imageFiles) {
+      try {
+        String fileName = generateChatImageFileName();
+
+        PutObjectRequest request =
+            PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(fileName)
+                .contentType(imageFile.getContentType())
+                .build();
+
+        amazonS3.putObject(
+            request, RequestBody.fromInputStream(imageFile.getInputStream(), imageFile.getSize()));
+
+        String imageUrl = getFileUrl(fileName);
+
+        imageUrls.add(imageUrl);
+
+      } catch (IOException e) {
+        log.error("Error uploading file to S3.", e);
+        throw new CustomException(ErrorCode.S3_UPLOAD_ERROR);
+      }
+    }
+    return imageUrls;
+  }
+
+  private String generateChatImageFileName() {
+    return "chat" + '/' + UUID.randomUUID().toString();
   }
 }

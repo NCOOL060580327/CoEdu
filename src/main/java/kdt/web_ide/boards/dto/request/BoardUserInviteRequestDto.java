@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class BoardUserInviteRequestDto {
-  private String loginId;
+  private Long kakaoId;
 
   public BoardUser toEntity(Board board, Member member) {
     return BoardUser.builder().board(board).isLeader(false).member(member).build();

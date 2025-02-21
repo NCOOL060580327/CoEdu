@@ -37,6 +37,12 @@ public class JwtAuthFilter extends GenericFilterBean {
     HttpServletRequest httpRequest = (HttpServletRequest) request;
     HttpServletResponse httpResponse = (HttpServletResponse) response;
 
+    String requestURI = httpRequest.getRequestURI();
+    if (requestURI.startsWith("/metrics") || requestURI.startsWith("/actuator")) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
     // 헤더에서 JWT 토큰을 가져옴
     String token = jwtProvider.resolveToken(httpRequest);
 

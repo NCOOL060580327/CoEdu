@@ -85,6 +85,7 @@ public class MemberController {
 
   // 회원 정보 조회
   @GetMapping("/profile")
+  @Operation(summary = "회원 정보 조회 API", description = "회원 정보 조회")
   public ResponseEntity<?> getMember(@AuthenticationPrincipal CustomUserDetails userDetails) {
     MemberResponse memberResponse = memberService.getMember(userDetails.getMember());
     return ResponseEntity.status(HttpStatus.OK).body(memberResponse);

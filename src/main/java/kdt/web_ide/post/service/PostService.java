@@ -56,15 +56,14 @@ public class PostService {
 
     String fileName =
         generateFileName(requestDto.getName(), String.valueOf(requestDto.getLanguage()));
-    String filePath = "test";
-    // uploadEmptyFileToS3(fileName, board.getId());
+    uploadEmptyFileToS3(fileName, board.getId());
 
     Post post =
         Post.builder()
             .board(board)
             .name(requestDto.getName())
             .language(requestDto.getLanguage())
-            .filePath(filePath)
+            .filePath(fileName)
             .createdAt(LocalDateTime.now())
             .build();
 
@@ -150,6 +149,7 @@ public class PostService {
   private PostResponseDto mapToResponseDto(Post post, Integer roomId) {
     return PostResponseDto.builder()
         .id(post.getId())
+        .boardTitle(post.getBoard().getTitle())
         .boardId(post.getBoard().getId().intValue())
         .name(post.getName())
         .language(post.getLanguage())
