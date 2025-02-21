@@ -17,7 +17,8 @@
       "Image": "prom/node-exporter:master",
       "Ports": [
         {
-          "ContainerPort": 9100
+          "ContainerPort": 9100,
+          "HostPort": 9100
         }
       ]
     }
