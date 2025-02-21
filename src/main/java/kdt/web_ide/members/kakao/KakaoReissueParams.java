@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@AllArgsConstructor
 public class KakaoReissueParams {
 
   private String refreshToken;

@@ -4,6 +4,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import kdt.web_ide.members.entity.Member;
 import kdt.web_ide.schedules.entity.Schedule;
 import kdt.web_ide.schedules.entity.ScheduleMember;
@@ -19,8 +21,13 @@ public class ScheduleResponseDto {
   private String address;
   private double latitude;
   private double longitude;
+
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   private ZonedDateTime startAt;
+
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   private ZonedDateTime endAt;
+
   private String locationName;
   private List<MemberDto> members;
 
@@ -45,10 +52,12 @@ public class ScheduleResponseDto {
   public static class MemberDto {
     private Long memberId;
     private String nickname;
+    private String profileImg;
 
     public MemberDto(Member member) {
       this.memberId = member.getMemberId();
       this.nickname = member.getNickName();
+      this.profileImg = member.getProfileImage();
     }
   }
 }

@@ -46,7 +46,10 @@ public enum ErrorCode {
 
   // 일정
   SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "SCHEDULE-001", "일정을 찾을 수 없습니다."),
-  SCHEDULE_ACCESS_ERROR(HttpStatus.UNAUTHORIZED, "SCHEDULE-002", "권한이 없습니다.");
+  SCHEDULE_ACCESS_ERROR(HttpStatus.UNAUTHORIZED, "SCHEDULE-002", "권한이 없습니다."),
+  MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "SCHEDULE-003", "일정에 참여하지 않는 멤버입니다."),
+  MEMBER_ALREADY_IN_SCHEDULE(HttpStatus.BAD_REQUEST, "SCHEDULE-004", "일정에 이미 참여하는 멤버입니다."),
+  INVALID_SCHEDULE_FORMAT(HttpStatus.BAD_REQUEST, "SCHEDULE-005", "일정은 5분 단위로 등록해야 합니다.");
 
   private final HttpStatus httpStatus; // HttpStatus
   private final String code; // ACCOUNT-001

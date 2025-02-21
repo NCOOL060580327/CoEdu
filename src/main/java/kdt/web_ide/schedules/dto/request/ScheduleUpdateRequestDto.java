@@ -2,12 +2,9 @@ package kdt.web_ide.schedules.dto.request;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 import kdt.web_ide.members.entity.Member;
 import kdt.web_ide.schedules.entity.Schedule;
@@ -45,15 +42,12 @@ public class ScheduleUpdateRequestDto {
   @NotNull(message = "경도는 필수입니다.")
   private Double longitude;
 
-  @NotEmpty(message = "참여자 목록은 필수입니다.")
-  @Size(min = 1, message = "적어도 한 명의 참여자가 필요합니다.")
   private List<MemberDto> members;
 
   @Getter
   @Setter
   @NoArgsConstructor
   public static class MemberDto {
-    @NotNull(message = "식별 코드는 필수입니다.")
     private String identificationCode;
   }
 
@@ -67,10 +61,6 @@ public class ScheduleUpdateRequestDto {
         this.address,
         this.latitude,
         this.longitude);
-  }
-
-  public List<String> getIdentificationCodes() {
-    return members.stream().map(MemberDto::getIdentificationCode).collect(Collectors.toList());
   }
 
   public List<ScheduleMember> toMemberList(Schedule schedule, List<Member> memberList) {

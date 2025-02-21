@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "schedules")
 public class Schedule {
 
   @Id
@@ -28,15 +29,15 @@ public class Schedule {
 
   @JsonFormat(
       shape = JsonFormat.Shape.STRING,
-      pattern = "yyyy-MM-dd'T'HH:mm:ssXXX",
-      timezone = "UTC")
+      pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+      timezone = "Asia/Seoul")
   @Column(name = "start_at")
   private ZonedDateTime startAt;
 
   @JsonFormat(
       shape = JsonFormat.Shape.STRING,
-      pattern = "yyyy-MM-dd'T'HH:mm:ssXXX",
-      timezone = "UTC")
+      pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+      timezone = "Asia/Seoul")
   @Column(name = "end_at")
   private ZonedDateTime endAt;
 
@@ -50,7 +51,7 @@ public class Schedule {
   private double latitude;
   private double longitude;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne
   @JoinColumn(name = "board_id")
   private Board board;
 

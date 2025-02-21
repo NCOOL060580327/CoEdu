@@ -6,7 +6,7 @@ import kdt.web_ide.members.entity.Member;
 import lombok.*;
 
 @Entity
-@Table(name = "schedule_member")
+@Table(name = "schedule_members")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
