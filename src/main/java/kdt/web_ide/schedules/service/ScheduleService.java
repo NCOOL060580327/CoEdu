@@ -47,6 +47,8 @@ public class ScheduleService {
             .findById(boardId)
             .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
 
+    if ((requestDto.getStartAt()).isAfter(requestDto.getEndAt()))
+      throw new CustomException(ErrorCode.DATETIME_ERROR);
     // 5분 단위로 떨어지는지 확인
     if (requestDto.getStartAt() != null && requestDto.getStartAt().getMinute() % 5 != 0) {
       throw new CustomException(ErrorCode.INVALID_SCHEDULE_FORMAT);
