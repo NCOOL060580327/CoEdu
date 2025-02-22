@@ -1,28 +1,13 @@
 {
   "AWSEBDockerrunVersion": "1",
-  "ContainerDefinitions": [
+  "Image": {
+    "Name": "groomkdt/kdt:latest",
+    "Update": "true"
+  },
+  "Ports": [
     {
-      "Name": "app",
-      "Image": "groomkdt/kdt:latest",
-      "Update": "true",
-      "Ports": [
-        {
-          "ContainerPort": 8080,
-          "HostPort": 5000
-        }
-      ]
-    },
-    {
-      "Name": "node-exporter",
-      "Image": "prom/node-exporter:master",
-      "Ports": [
-        {
-          "ContainerPort": 9100,
-          "HostPort": 9100
-        }
-      ]
+      "ContainerPort": 8080,
+      "HostPort": 5000
     }
   ]
 }
-
-
