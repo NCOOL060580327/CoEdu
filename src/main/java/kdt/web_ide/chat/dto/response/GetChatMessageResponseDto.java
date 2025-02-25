@@ -21,6 +21,7 @@ public record GetChatMessageResponseDto(
         .memberNickname(chatMessage.getSender().getNickName())
         .sendTime(
             chatMessage.getSendTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+        .type(chatMessage.getType())
         .build();
   }
 }
