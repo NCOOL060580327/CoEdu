@@ -58,16 +58,27 @@ public class BoardController {
     return ResponseEntity.status(HttpStatus.OK).body("게시판이 삭제되었습니다.");
   }
 
+  //  @Operation(summary = "게시판 멤버 초대 API", description = "카카오 ID로 멤버를 초대합니다. 리더만 초대 가능합니다.")
+  //  @PostMapping("/{boardId}/invite")
+  //  public ResponseEntity<BoardUserResponseDto> inviteMember(
+  //      @PathVariable Long boardId,
+  //      @RequestBody @Valid BoardUserInviteRequestDto requestDto,
+  //      @AuthenticationPrincipal CustomUserDetails userDetails) {
+  //
+  //    BoardUserResponseDto invitedUser =
+  //        boardService.inviteMember(requestDto, boardId, userDetails.getMember());
+  //    return ResponseEntity.ok(invitedUser);
+  //  }
+
   @Operation(summary = "게시판 멤버 초대 API", description = "카카오 ID로 멤버를 초대합니다. 리더만 초대 가능합니다.")
-  @PostMapping("/{boardId}/invite")
-  public ResponseEntity<BoardUserResponseDto> inviteMember(
+  @PostMapping(value = "/{boardId}/invite", produces = "application/json; charset=UTF-8")
+  public ResponseEntity<String> inviteMember(
       @PathVariable Long boardId,
       @RequestBody @Valid BoardUserInviteRequestDto requestDto,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-    BoardUserResponseDto invitedUser =
-        boardService.inviteMember(requestDto, boardId, userDetails.getMember());
-    return ResponseEntity.ok(invitedUser);
+    boardService.inviteMember(requestDto, boardId, userDetails.getMember());
+    return ResponseEntity.ok("초대 알림이 전송되었습니다.");
   }
 
   // 게시판 인원 조회

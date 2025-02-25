@@ -20,6 +20,10 @@ import kdt.web_ide.common.exception.CustomException;
 import kdt.web_ide.common.exception.ErrorCode;
 import kdt.web_ide.members.entity.Member;
 import kdt.web_ide.members.entity.repository.MemberRepository;
+import kdt.web_ide.notification.entity.Notification;
+import kdt.web_ide.notification.entity.NotificationType;
+import kdt.web_ide.notification.entity.repository.NotificationRepository;
+import kdt.web_ide.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -29,6 +33,8 @@ public class BoardService {
   private final BoardRepository boardRepository;
   private final BoardUserRepository boardUserRepository;
   private final MemberRepository memberRepository;
+  private final NotificationService notificationService;
+  private final NotificationRepository notificationRepository;
 
   // 게시판 생성
   @Transactional
@@ -74,7 +80,7 @@ public class BoardService {
   }
 
   @Transactional
-  public BoardUserResponseDto inviteMember(
+  public void inviteMember(
       BoardUserInviteRequestDto requestDto, Long boardId, Member currentMember) {
 
     if (requestDto.getKakaoId() == null) {
@@ -86,6 +92,7 @@ public class BoardService {
             .findById(boardId)
             .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
 
+    // 초대 권한 확인 (리더만 가능)
     boardUserRepository
         .findByMemberAndBoardAndIsLeaderTrue(currentMember, board)
         .orElseThrow(() -> new CustomException(ErrorCode.NO_PERMISSION));
@@ -95,6 +102,7 @@ public class BoardService {
             .findByKakaoId(requestDto.getKakaoId())
             .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+    // 이미 초대되었거나 멤버인 경우 예외
     boardUserRepository
         .findByMemberAndBoard(memberToInvite, board)
         .ifPresent(
@@ -102,10 +110,50 @@ public class BoardService {
               throw new CustomException(ErrorCode.ALREADY_IN_BOARD);
             });
 
-    BoardUser newUser = requestDto.toEntity(board, memberToInvite);
+    // 알림 전송
+    String message = String.format("[%s] 게시판에 초대되었습니다. 수락/거절하세요.", board.getTitle());
+    notificationService.sendNotification(memberToInvite, NotificationType.INVITATION, message);
+  }
+
+  // 초대 수락
+  @Transactional
+  public void acceptInvitation(Long notificationId, Long boardId, Member member) {
+
+    Notification notification =
+        notificationRepository
+            .findById(notificationId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));
+
+    if (!notification.getMember().getMemberId().equals(member.getMemberId())) {
+      throw new CustomException(ErrorCode.NO_PERMISSION);
+    }
+
+    if (notification.getType() != NotificationType.INVITATION) {
+      throw new CustomException(ErrorCode.INVALID_NOTIFICATION_TYPE);
+    }
+
+    Board board =
+        boardRepository
+            .findById(boardId)
+            .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
+
+    boardUserRepository
+        .findByMemberAndBoard(member, board)
+        .ifPresent(
+            m -> {
+              throw new CustomException(ErrorCode.ALREADY_IN_BOARD);
+            });
+
+    BoardUser newUser = BoardUser.builder().board(board).member(member).isLeader(false).build();
     boardUserRepository.save(newUser);
 
-    return new BoardUserResponseDto(newUser);
+    notificationRepository.delete(notification);
+  }
+
+  // 초대 거절
+  @Transactional
+  public void rejectInvitation(Long notificationId, Member member) {
+    notificationService.deleteNotification(notificationId, member);
   }
 
   // 게시판 인원 조회

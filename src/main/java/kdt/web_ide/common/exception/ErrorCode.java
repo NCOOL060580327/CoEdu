@@ -52,7 +52,11 @@ public enum ErrorCode {
   MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "SCHEDULE-003", "일정에 참여하지 않는 멤버입니다."),
   MEMBER_ALREADY_IN_SCHEDULE(HttpStatus.BAD_REQUEST, "SCHEDULE-004", "일정에 이미 참여하는 멤버입니다."),
   INVALID_SCHEDULE_FORMAT(HttpStatus.BAD_REQUEST, "SCHEDULE-005", "일정은 5분 단위로 등록해야 합니다."),
-  DATETIME_ERROR(HttpStatus.BAD_REQUEST, "SCHEDULE-006", "시작 시간은 종료 시간보다 이전이어야 합니다.");
+  DATETIME_ERROR(HttpStatus.BAD_REQUEST, "SCHEDULE-006", "시작 시간은 종료 시간보다 이전이어야 합니다."),
+
+  // 알림
+  NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTIFICATION-001", "알림을 찾을 수 없습니다."),
+  INVALID_NOTIFICATION_TYPE(HttpStatus.BAD_REQUEST, "NOTIFICATION-002", "유효하지 않은 알림 타입입니다.");
 
   private final HttpStatus httpStatus; // HttpStatus
   private final String code; // ACCOUNT-001
