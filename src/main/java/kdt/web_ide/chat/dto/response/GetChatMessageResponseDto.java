@@ -11,7 +11,8 @@ public record GetChatMessageResponseDto(
     String messageText,
     String memberProfileImageUrl,
     String memberNickname,
-    String sendTime) {
+    String sendTime,
+    String type) {
   public static GetChatMessageResponseDto fromChatMessage(ChatMessage chatMessage) {
     return GetChatMessageResponseDto.builder()
         .senderId(chatMessage.getSender().getMemberId())

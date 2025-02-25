@@ -53,7 +53,7 @@ public class ChatService {
             .findById(requestDto.senderId())
             .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-    ChatMessage message = saveMessage(chatRoom, sender, requestDto.content());
+    ChatMessage message = saveMessage(chatRoom, sender, requestDto.content(), "text");
 
     CompletableFuture.runAsync(
         () -> {
@@ -83,7 +83,8 @@ public class ChatService {
     return responseDtoList;
   }
 
-  private ChatMessage saveMessage(ChatRoom chatRoom, Member sender, String messageText) {
+  private ChatMessage saveMessage(
+      ChatRoom chatRoom, Member sender, String messageText, String type) {
 
     ChatMessage message =
         ChatMessage.builder()
@@ -91,6 +92,7 @@ public class ChatService {
             .sender(sender)
             .messageText(messageText)
             .sendTime(LocalDateTime.now())
+            .type(type)
             .build();
 
     return chatMessageRepository.save(message);
@@ -118,13 +120,15 @@ public class ChatService {
   @Transactional
   public void sendImage(Long senderId, Long chatRoomId, List<MultipartFile> multipartFileList) {
 
-    chatRoomRepository
-        .findById(chatRoomId)
-        .orElseThrow(() -> new CustomException(ErrorCode.CHATROOM_NOT_FOUND));
+    ChatRoom chatRoom =
+        chatRoomRepository
+            .findById(chatRoomId)
+            .orElseThrow(() -> new CustomException(ErrorCode.CHATROOM_NOT_FOUND));
 
-    memberRepository
-        .findById(senderId)
-        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    Member sender =
+        memberRepository
+            .findById(senderId)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
     List<String> imageUrlList = s3Service.uploadImages(multipartFileList);
 
@@ -132,7 +136,17 @@ public class ChatService {
 
       ChatMessageRequestDto requestDto = new ChatMessageRequestDto(senderId, imageUrl);
 
-      sendMessage(chatRoomId, requestDto);
+      ChatMessage message = saveMessage(chatRoom, sender, requestDto.content(), "image");
+
+      CompletableFuture.runAsync(
+          () -> {
+            simpMessagingTemplate.convertAndSend(
+                "/room/" + chatRoomId, GetChatMessageResponseDto.fromChatMessage(message));
+          });
+
+      chatRoomMemberRepository.incrementNotReadCount(chatRoomId, sender.getMemberId());
+
+      notifyUnreadMessageCount(chatRoomId, sender.getMemberId());
     }
   }
 }

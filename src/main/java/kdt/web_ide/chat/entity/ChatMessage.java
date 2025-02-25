@@ -24,6 +24,8 @@ public class ChatMessage {
   @Column(columnDefinition = "LONGTEXT")
   private String messageText;
 
+  private String type;
+
   @CreatedDate
   @Column(updatable = false)
   private LocalDateTime sendTime;
