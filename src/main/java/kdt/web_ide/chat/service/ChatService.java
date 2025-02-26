@@ -2,7 +2,6 @@ package kdt.web_ide.chat.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -55,11 +54,8 @@ public class ChatService {
 
     ChatMessage message = saveMessage(chatRoom, sender, requestDto.content(), "text");
 
-    CompletableFuture.runAsync(
-        () -> {
-          simpMessagingTemplate.convertAndSend(
-              "/room/" + chatRoomId, GetChatMessageResponseDto.fromChatMessage(message));
-        });
+    simpMessagingTemplate.convertAndSend(
+        "/room/" + chatRoomId, GetChatMessageResponseDto.fromChatMessage(message));
 
     chatRoomMemberRepository.incrementNotReadCount(chatRoomId, sender.getMemberId());
 
@@ -138,11 +134,8 @@ public class ChatService {
 
       ChatMessage message = saveMessage(chatRoom, sender, requestDto.content(), "image");
 
-      CompletableFuture.runAsync(
-          () -> {
-            simpMessagingTemplate.convertAndSend(
-                "/room/" + chatRoomId, GetChatMessageResponseDto.fromChatMessage(message));
-          });
+      simpMessagingTemplate.convertAndSend(
+          "/room/" + chatRoomId, GetChatMessageResponseDto.fromChatMessage(message));
 
       chatRoomMemberRepository.incrementNotReadCount(chatRoomId, sender.getMemberId());
 
