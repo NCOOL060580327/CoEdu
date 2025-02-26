@@ -21,6 +21,8 @@ cloud:
     region: ${AWS_REGION}
     s3:
       bucket: ${AWS_S3_BUCKET}
+    cloudfront:
+      url: ${AWS_CLOUDFRONT_URL}
 oauth:
   kakao:
     client-id: ${KAKAO_CLIENT_ID}
