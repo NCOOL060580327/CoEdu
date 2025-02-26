@@ -34,4 +34,6 @@ public class Notification {
   private boolean isRead = false;
 
   private LocalDateTime createdAt;
+
+  private String boardTitle;
 }

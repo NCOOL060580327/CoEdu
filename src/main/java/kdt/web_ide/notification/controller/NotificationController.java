@@ -30,14 +30,20 @@ public class NotificationController {
       @RequestParam Long boardId,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     boardService.acceptInvitation(notificationId, boardId, userDetails.getMember());
+    notificationService.sendInvitationAcceptedNotification(
+        userDetails.getMember(), boardService.getBoardDetails(boardId).getTitle());
     return ResponseEntity.ok("초대를 수락하였습니다.");
   }
 
   @PostMapping(value = "/{notificationId}/reject", produces = "application/json; charset=UTF-8")
   @Operation(summary = "알림 거절 API", description = "알림을 거절합니다.")
   public ResponseEntity<String> rejectInvitation(
-      @PathVariable Long notificationId, @AuthenticationPrincipal CustomUserDetails userDetails) {
-    boardService.rejectInvitation(notificationId, userDetails.getMember());
+      @PathVariable Long notificationId,
+      @RequestParam Long boardId,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    boardService.rejectInvitation(notificationId, boardId, userDetails.getMember());
+    notificationService.sendInvitationRejectedNotification(
+        userDetails.getMember(), boardService.getBoardDetails(boardId).getTitle());
     return ResponseEntity.ok("초대를 거절하였습니다.");
   }
 
