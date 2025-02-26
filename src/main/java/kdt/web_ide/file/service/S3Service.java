@@ -32,15 +32,22 @@ public class S3Service {
   @Value("${cloud.aws.s3.bucket}")
   private String bucketName;
 
+  @Value("${cloud.aws.cloudfront.url}")
+  private String cloudFrontUrl;
+
   public String getFileUrl(String filePath) {
     try {
-      return amazonS3
-          .utilities()
-          .getUrl(GetUrlRequest.builder().bucket(bucketName).key(filePath).build())
-          .toExternalForm();
+      if (filePath == null || filePath.isEmpty()) {
+        throw new IllegalArgumentException("File path is empty or null.");
+      }
+
+      String fileUrl = cloudFrontUrl + "/" + filePath;
+      log.info("Generated CloudFront URL: {}", fileUrl);
+      return fileUrl;
+
     } catch (Exception e) {
-      log.error("Error fetching S3 file URL for path: {}", filePath, e);
-      throw new CustomException(ErrorCode.S3_FILE_NOT_FOUND);
+      log.error("Error generating CloudFront URL for path: {}", filePath, e);
+      throw new CustomException(ErrorCode.S3_FILE_NOT_FOUND, "CloudFront URL 생성 중 오류가 발생했습니다.");
     }
   }
 
