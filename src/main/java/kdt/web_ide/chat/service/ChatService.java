@@ -1,6 +1,7 @@
 package kdt.web_ide.chat.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -87,7 +88,7 @@ public class ChatService {
             .chatRoom(chatRoom)
             .sender(sender)
             .messageText(messageText)
-            .sendTime(LocalDateTime.now())
+            .sendTime(LocalDateTime.now(ZoneId.of("Asia/Seoul")))
             .type(type)
             .build();
 
