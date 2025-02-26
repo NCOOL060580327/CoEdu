@@ -20,6 +20,7 @@ public class NotificationResponseDto {
   private String message;
   private boolean isRead;
   private LocalDateTime createdAt;
+  private String boardTitle;
 
   public static NotificationResponseDto fromEntity(Notification notification) {
     return NotificationResponseDto.builder()
@@ -28,6 +29,7 @@ public class NotificationResponseDto {
         .message(notification.getMessage())
         .isRead(notification.isRead())
         .createdAt(notification.getCreatedAt())
+        .boardTitle(notification.getBoardTitle())
         .build();
   }
 }

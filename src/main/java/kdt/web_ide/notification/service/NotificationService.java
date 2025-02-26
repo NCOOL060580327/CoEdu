@@ -22,16 +22,42 @@ public class NotificationService {
 
   private final NotificationRepository notificationRepository;
 
-  public void sendNotification(Member member, NotificationType type, String message) {
+  @Transactional
+  public void sendNotification(Member member, NotificationType type, String boardTitle) {
+
+    boolean exists =
+        notificationRepository.findByMemberOrderByCreatedAtDesc(member).stream()
+            .anyMatch(
+                notification ->
+                    notification.getType() == type
+                        && boardTitle.equals(notification.getBoardTitle()));
+
+    if (exists) {
+      return; // 동일한 알림이 있으면 새로 생성하지 않음
+    }
+
+    String message = generateMessage(type, boardTitle);
+
     Notification notification =
         Notification.builder()
             .member(member)
             .type(type)
             .message(message)
+            .boardTitle(boardTitle)
+            .isRead(false)
             .createdAt(LocalDateTime.now())
             .build();
 
     notificationRepository.save(notification);
+  }
+
+  private String generateMessage(NotificationType type, String boardTitle) {
+    return switch (type) {
+      case INVITATION -> "[ 초대 ] " + boardTitle + " 교실에 초대 되었습니다.";
+      case INVITATION_ACCEPTED -> "[ 초대 ] " + boardTitle + " 교실 초대를 수락하였습니다.";
+      case INVITATION_REJECTED -> "[ 초대 ] " + boardTitle + " 교실 초대를 거절하였습니다.";
+      case SCHEDULE_CREATED -> "[ 일정 ] " + boardTitle + " 회의 일정이 생성되었습니다.";
+    };
   }
 
   public List<NotificationResponseDto> getUserNotifications(Member member) {
@@ -52,5 +78,13 @@ public class NotificationService {
     }
 
     notificationRepository.delete(notification);
+  }
+
+  public void sendInvitationAcceptedNotification(Member member, String boardTitle) {
+    sendNotification(member, NotificationType.INVITATION_ACCEPTED, boardTitle);
+  }
+
+  public void sendInvitationRejectedNotification(Member member, String boardTitle) {
+    sendNotification(member, NotificationType.INVITATION_REJECTED, boardTitle);
   }
 }
