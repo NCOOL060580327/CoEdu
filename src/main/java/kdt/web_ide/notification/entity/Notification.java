@@ -36,4 +36,6 @@ public class Notification {
   private LocalDateTime createdAt;
 
   private String boardTitle;
+
+  private Long boardId;
 }
