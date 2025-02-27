@@ -53,10 +53,10 @@ public class NotificationService {
 
   private String generateMessage(NotificationType type, String boardTitle) {
     return switch (type) {
-      case INVITATION -> "[ 초대 ] " + boardTitle + " 교실에 초대 되었습니다.";
-      case INVITATION_ACCEPTED -> "[ 초대 ] " + boardTitle + " 교실 초대를 수락하였습니다.";
-      case INVITATION_REJECTED -> "[ 초대 ] " + boardTitle + " 교실 초대를 거절하였습니다.";
-      case SCHEDULE_CREATED -> "[ 일정 ] " + boardTitle + " 회의 일정이 생성되었습니다.";
+      case INVITATION -> boardTitle + " 교실에 초대 되었습니다.";
+      case INVITATION_ACCEPTED -> boardTitle + " 교실 초대를 수락하였습니다.";
+      case INVITATION_REJECTED -> boardTitle + " 교실 초대를 거절하였습니다.";
+      case SCHEDULE_CREATED -> boardTitle + " 회의 일정이 생성되었습니다.";
     };
   }
 
