@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import kdt.web_ide.boards.entity.BoardRepository;
 import kdt.web_ide.common.exception.CustomException;
 import kdt.web_ide.common.exception.ErrorCode;
 import kdt.web_ide.members.entity.Member;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class NotificationService {
 
   private final NotificationRepository notificationRepository;
+  private final BoardRepository boardRepository;
 
   @Transactional
   public void sendNotification(Member member, NotificationType type, String boardTitle) {
@@ -38,12 +40,18 @@ public class NotificationService {
 
     String message = generateMessage(type, boardTitle);
 
+    Long boardId =
+        boardRepository
+            .findIdByTitle(boardTitle)
+            .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
+
     Notification notification =
         Notification.builder()
             .member(member)
             .type(type)
             .message(message)
             .boardTitle(boardTitle)
+            .boardId(boardId)
             .isRead(false)
             .createdAt(LocalDateTime.now())
             .build();
